@@ -13,6 +13,7 @@ class SpliceJunction(object):
     General information about the Splice Junction Gene Sequences dataset.
     """
     name: str = 'splice-junction'
+    size: int = 3190
     knowledge_file_name: str = 'splice-junction.pl'
     data_url: str = UCI_URL + "molecular-biology/splice-junction-gene-sequences/splice.data"
     file_name: str = PATH / "splice-junction-data.csv"
@@ -33,6 +34,7 @@ class BreastCancer(object):
     General information about the Breast Cancer Wisconsin dataset.
     """
     name: str = 'breast-cancer'
+    size: int = 699
     knowledge_file_name: str = 'breast-cancer.pl'
     data_url: str = UCI_URL + "breast-cancer-wisconsin/breast-cancer-wisconsin.data"
     file_name: str = PATH / "breast-cancer-data.csv"
@@ -49,6 +51,7 @@ class CensusIncome(object):
     General information about the Census Income dataset.
     """
     name: str = 'census-income'
+    size: int = 48842
     knowledge_file_name: str = 'census-income.pl'
     data_url: str = UCI_URL + "adult/adult.data"
     data_test_url: str = UCI_URL + "adult/adult.test"

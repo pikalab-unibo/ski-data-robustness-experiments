@@ -1,14 +1,17 @@
 import distutils.cmd
 import os
-
 import pandas as pd
+from keras.utils.generic_utils import get_custom_objects
+from psyki.fuzzifiers.netbuilder import NetBuilder
 from psyki.logic.prolog import TuProlog
 from psyki.ski import Injector
 from setuptools import find_packages, setup
 from tensorflow.python.keras.metrics import Precision, Recall
 from data import load_splice_junction_dataset, SpliceJunction, load_breast_cancer_dataset, BreastCancer, \
     load_census_income_dataset, CensusIncome
-from experiments import generate_neural_network_breast_cancer
+from experiments import generate_neural_network_breast_cancer, generate_neural_network_census_income, \
+    generate_neural_network_splice_junction
+from figures import plot_distributions_comparison
 from knowledge import PATH as KNOWLEDGE_PATH
 
 
@@ -53,14 +56,42 @@ class RunExperimentsWithDataDrop(distutils.cmd.Command):
 
     def run(self) -> None:
         from experiments import experiment_with_data_drop
-        breast_cancer_dataset = pd.read_csv(BreastCancer.file_name, header=0, sep=",", encoding='utf8')
-        uneducated = generate_neural_network_breast_cancer(self.metrics)
-        # knowledge = TuProlog.from_file(KNOWLEDGE_PATH / BreastCancer.knowledge_file_name).formulae
-        # feature_mapping = {k: v for v, k in enumerate(breast_cancer_dataset.columns[:-1])}
-        # kins = Injector.kins(uneducated, feature_mapping)
-        # educated = kins.inject(knowledge)
-        # educated.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
-        experiment_with_data_drop(breast_cancer_dataset, uneducated, 'breast_cancer', 'uneducated', self.population_size, self.metrics)
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        predictor_names = ['kins']  # ['uneducated', 'kins', 'kill', 'kbann']
+        get_custom_objects().update(NetBuilder.custom_objects)
+        for dataset in datasets:
+            print(f'Running experiments for {dataset.name} dataset')
+            data = pd.read_csv(dataset.file_name, header=0, sep=",", encoding='utf8')
+            loss = 'binary_crossentropy'
+            if dataset.name == CensusIncome.name:
+                uneducated = generate_neural_network_census_income(self.metrics)
+            elif dataset.name == SpliceJunction.name:
+                loss = 'categorical_crossentropy'
+                uneducated = generate_neural_network_splice_junction(self.metrics)
+            else:
+                uneducated = generate_neural_network_breast_cancer(self.metrics)
+            for name in predictor_names:
+                if name == 'uneducated':
+                    experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                elif name == 'kins':
+                    feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
+                    injector = Injector.kins(uneducated, feature_mapping)
+                    knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                    predictor = injector.inject(knowledge)
+                    experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                elif name == 'kill':
+                    feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
+                    class_mapping = dataset.class_mapping_short
+                    injector = Injector.kill(uneducated, class_mapping, feature_mapping)
+                    knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                    predictor = injector.inject(knowledge)
+                    experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                elif name == 'kbann':
+                    feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
+                    injector = Injector.kbann(uneducated, feature_mapping)
+                    knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                    predictor = injector.inject(knowledge)
+                    experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
 
 
 class GeneratePlots(distutils.cmd.Command):
@@ -74,13 +105,56 @@ class GeneratePlots(distutils.cmd.Command):
         pass
 
     def run(self) -> None:
-        from statistics import plot_accuracy_distributions
+        from figures import plot_accuracy_distributions
         from results.drop import PATH as DROP_RESULT_PATH
-        results = []
-        for file in os.listdir(DROP_RESULT_PATH):
-            if file.endswith('.csv') and file.startswith('breast_cancer_uneducated'):
-                results.append(pd.read_csv(DROP_RESULT_PATH / file, header=0, sep=",", encoding='utf8'))
-        plot_accuracy_distributions(results)
+
+        predictor_names = ['uneducated', 'kins', 'kill', 'kbann']
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        metrics = ['accuracy', 'precision', 'recall']
+        for dataset in datasets:
+            print(f'Generating plots for {dataset.name} dataset')
+            for predictor in predictor_names:
+                results = []
+                directory = DROP_RESULT_PATH / dataset.name / predictor
+                if os.path.exists(directory):
+                    files = os.listdir(directory)
+                    files = [f for f in files if f.endswith('.csv')]
+                    if len(files) > 0:
+                        for file in sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
+                            results.append(pd.read_csv(directory / file, header=0, sep=",", encoding='utf8'))
+                        for metric in metrics:
+                            plot_accuracy_distributions(results, dataset, 5, 20, predictor, metric)
+
+
+class GenerateComparisonPlots(distutils.cmd.Command):
+    description = 'generate comparison plots'
+    user_options = []
+
+    def initialize_options(self) -> None:
+        pass
+
+    def finalize_options(self) -> None:
+        pass
+
+    def run(self) -> None:
+        from figures import plot_distributions_comparison
+        from results.drop import PATH as DROP_RESULT_PATH
+
+        educated_predictors = ['kins', 'kill', 'kbann']
+        directory1 = DROP_RESULT_PATH / BreastCancer.name / 'uneducated'
+        files1 = os.listdir(directory1)
+        files1 = [f for f in files1 if f.endswith('.csv')]
+        for educated in educated_predictors:
+            directory2 = DROP_RESULT_PATH / BreastCancer.name / educated
+            files2 = os.listdir(directory2)
+            files2 = [f for f in files2 if f.endswith('.csv')]
+            results1, results2 = [], []
+            if 0 < len(files1) == len(files2):
+                for file in sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
+                    results1.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
+                for file in sorted(files2, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
+                    results2.append(pd.read_csv(directory2 / file, header=0, sep=",", encoding='utf8'))
+            plot_distributions_comparison(results1, results2, BreastCancer, 5, 20, 'uneducated', educated, 'accuracy')
 
 
 setup(
@@ -116,5 +190,6 @@ setup(
         'load_datasets': LoadDatasets,
         'run_experiments_with_data_drop': RunExperimentsWithDataDrop,
         'generate_plots': GeneratePlots,
+        'generate_comparison_plots': GenerateComparisonPlots,
     },
 )
