@@ -89,23 +89,22 @@ class RunExperimentsWithDataDrop(distutils.cmd.Command):
             for name in self.predictor_names:
                 if name == 'uneducated':
                     experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
-                elif name == 'kins':
-                    feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
-                    injector = Injector.kins(uneducated, feature_mapping)
-                    knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
-                    predictor = injector.inject(knowledge)
-                    experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
-                elif name == 'kill':
-                    feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
-                    class_mapping = dataset.class_mapping_short
-                    injector = Injector.kill(uneducated, class_mapping, feature_mapping)
-                    knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
-                    predictor = injector.inject(knowledge)
-                    experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
-                elif name == 'kbann':
-                    feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
-                    injector = Injector.kbann(uneducated, feature_mapping)
-                    knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                else:
+                    if name == 'kins':
+                        feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
+                        injector = Injector.kins(uneducated, feature_mapping)
+                        knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                    elif name == 'kill':
+                        feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
+                        class_mapping = dataset.class_mapping_short
+                        injector = Injector.kill(uneducated, class_mapping, feature_mapping)
+                        knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                    elif name == 'kbann':
+                        feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
+                        injector = Injector.kbann(uneducated, feature_mapping)
+                        knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                    for k in knowledge:
+                        k.trainable = True
                     predictor = injector.inject(knowledge)
                     experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
 
