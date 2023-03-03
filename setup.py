@@ -11,7 +11,6 @@ from data import load_splice_junction_dataset, SpliceJunction, load_breast_cance
     load_census_income_dataset, CensusIncome
 from experiments import generate_neural_network_breast_cancer, generate_neural_network_census_income, \
     generate_neural_network_splice_junction
-from figures import plot_distributions_comparison
 from knowledge import PATH as KNOWLEDGE_PATH
 
 
@@ -42,24 +41,41 @@ class LoadDatasets(distutils.cmd.Command):
 
 class RunExperimentsWithDataDrop(distutils.cmd.Command):
     description = 'run experiments'
-    user_options = []
+    user_options = [('dataset=', 'd', 'dataset to run the experiments on (b[reast cancer], s[plice junction], c[ensus income])'),
+                    ('predictor=', 'p', 'predictors to use (u[neducated], kins, kill, kbann)')]
     metrics = ['accuracy', Precision(), Recall()]
     optimizer = 'adam'
     loss = 'sparse_categorical_crossentropy'
     population_size = 30
+    datasets = [BreastCancer, SpliceJunction, CensusIncome]
+    predictor_names = ['uneducated', 'kins', 'kill', 'kbann']
 
     def initialize_options(self) -> None:
-        pass
+        self.dataset = None
+        self.predictor = None
 
     def finalize_options(self) -> None:
-        pass
+        if self.dataset:
+            if self.dataset.lower() == 'b':
+                self.datasets = [BreastCancer]
+            elif self.dataset.lower() == 's':
+                self.datasets = [SpliceJunction]
+            elif self.dataset.lower() == 'c':
+                self.datasets = [CensusIncome]
+        if self.predictor:
+            if self.predictor.lower() == 'u':
+                self.predictor_names = ['uneducated']
+            elif self.predictor.lower() == 'kins':
+                self.predictor_names = ['kins']
+            elif self.predictor.lower() == 'kill':
+                self.predictor_names = ['kill']
+            elif self.predictor.lower() == 'kbann':
+                self.predictor_names = ['kbann']
 
     def run(self) -> None:
         from experiments import experiment_with_data_drop
-        datasets = [BreastCancer, SpliceJunction, CensusIncome]
-        predictor_names = ['kins']  # ['uneducated', 'kins', 'kill', 'kbann']
         get_custom_objects().update(NetBuilder.custom_objects)
-        for dataset in datasets:
+        for dataset in self.datasets:
             print(f'Running experiments for {dataset.name} dataset')
             data = pd.read_csv(dataset.file_name, header=0, sep=",", encoding='utf8')
             loss = 'binary_crossentropy'
@@ -70,7 +86,7 @@ class RunExperimentsWithDataDrop(distutils.cmd.Command):
                 uneducated = generate_neural_network_splice_junction(self.metrics)
             else:
                 uneducated = generate_neural_network_breast_cancer(self.metrics)
-            for name in predictor_names:
+            for name in self.predictor_names:
                 if name == 'uneducated':
                     experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
                 elif name == 'kins':
@@ -109,7 +125,7 @@ class GeneratePlots(distutils.cmd.Command):
         from results.drop import PATH as DROP_RESULT_PATH
 
         predictor_names = ['uneducated', 'kins', 'kill', 'kbann']
-        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        datasets = [BreastCancer] # , SpliceJunction, CensusIncome]
         metrics = ['accuracy', 'precision', 'recall']
         for dataset in datasets:
             print(f'Generating plots for {dataset.name} dataset')
@@ -141,20 +157,64 @@ class GenerateComparisonPlots(distutils.cmd.Command):
         from results.drop import PATH as DROP_RESULT_PATH
 
         educated_predictors = ['kins', 'kill', 'kbann']
-        directory1 = DROP_RESULT_PATH / BreastCancer.name / 'uneducated'
-        files1 = os.listdir(directory1)
-        files1 = [f for f in files1 if f.endswith('.csv')]
-        for educated in educated_predictors:
-            directory2 = DROP_RESULT_PATH / BreastCancer.name / educated
-            files2 = os.listdir(directory2)
-            files2 = [f for f in files2 if f.endswith('.csv')]
-            results1, results2 = [], []
-            if 0 < len(files1) == len(files2):
-                for file in sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
-                    results1.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
-                for file in sorted(files2, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
-                    results2.append(pd.read_csv(directory2 / file, header=0, sep=",", encoding='utf8'))
-            plot_distributions_comparison(results1, results2, BreastCancer, 5, 20, 'uneducated', educated, 'accuracy')
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        metric = 'accuracy'
+        for dataset in datasets:
+            print(f'Generating comparison plots for {dataset.name} dataset')
+            directory1 = DROP_RESULT_PATH / dataset.name / 'uneducated'
+            files1 = os.listdir(directory1)
+            files1 = [f for f in files1 if f.endswith('.csv')]
+            for educated in educated_predictors:
+                directory2 = DROP_RESULT_PATH / dataset.name / educated
+                if not os.path.exists(directory2):
+                    continue
+                files2 = os.listdir(directory2)
+                files2 = [f for f in files2 if f.endswith('.csv')]
+                results1, results2 = [], []
+                if 0 < len(files1) == len(files2):
+                    for file in sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
+                        results1.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
+                    for file in sorted(files2, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
+                        results2.append(pd.read_csv(directory2 / file, header=0, sep=",", encoding='utf8'))
+                    plot_distributions_comparison(results1, results2, dataset, 5, 20, 'uneducated', educated, metric)
+
+
+class GenerateComparativeDistributionCurves(distutils.cmd.Command):
+    description = 'generate comparative distribution curves'
+    user_options = []
+
+    def initialize_options(self) -> None:
+        pass
+
+    def finalize_options(self) -> None:
+        pass
+
+    def run(self) -> None:
+        from figures import plot_average_accuracy_curves
+        from results.drop import PATH as DROP_RESULT_PATH
+
+        educated_predictors = ['kins', 'kill', 'kbann']  # ['kins', 'kill', 'kbann']
+        datasets = [BreastCancer]
+        metric = 'accuracy'
+        for dataset in datasets:
+            print(f'Generating comparative distribution curves for {dataset.name} dataset')
+            directory1 = DROP_RESULT_PATH / dataset.name / 'uneducated'
+            files1 = os.listdir(directory1)
+            files1 = [f for f in files1 if f.endswith('.csv')]
+            paths = [DROP_RESULT_PATH / dataset.name / educated for educated in educated_predictors]
+            paths = [path for path in paths if os.path.exists(path)]
+            files_groups = [os.listdir(path) for path in paths]
+            experiments = []
+            tmp = []
+            for file in sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
+                tmp.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
+            experiments.append(tmp)
+            for path, files in zip(paths, files_groups):
+                tmp = []
+                for file in sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
+                    tmp.append(pd.read_csv(path / file, header=0, sep=",", encoding='utf8'))
+                experiments.append(tmp)
+            plot_average_accuracy_curves(experiments, dataset, 5, 20, educated_predictors, metric)
 
 
 setup(
@@ -191,5 +251,6 @@ setup(
         'run_experiments_with_data_drop': RunExperimentsWithDataDrop,
         'generate_plots': GeneratePlots,
         'generate_comparison_plots': GenerateComparisonPlots,
+        'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,
     },
 )

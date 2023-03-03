@@ -1,5 +1,4 @@
 data/*.csv
-results/drop/*/*/*.csv
 figures/*/*/*.png
 figures/*/*/*.pdf
 figures/*/*/*.svg

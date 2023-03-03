@@ -58,6 +58,8 @@ def experiment_with_data_drop(data: pd.DataFrame, predictor: Model, data_name: s
     train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
+    if ski_name == 'kbann':
+        predictor = clone_model(predictor)
     for i in range(n_steps):
         print("\n\nStep {}/{}\n".format(i + 1, n_steps))
         if not os.path.exists(DROP_RESULTS_PATH / data_name):
