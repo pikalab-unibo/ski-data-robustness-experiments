@@ -48,7 +48,7 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
 
 
 def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.DataFrame],
-                                  dataset: BreastCancer or SpliceJunction or CensusIncome,
+                                  dataset: BreastCancer or SpliceJunction or CensusIncome, exp_type: str,
                                   drop_percentage: int, steps: int, predictor_name1: str, predictor_name2: str,
                                   metric: str):
     """
@@ -58,6 +58,7 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
     :param data1: A list of dataframes containing the results of the experiments.
     :param data2: A list of dataframes containing the results of the experiments.
     :param dataset: The dataset object containing all main information.
+    :param exp_type: The type of the experiment.
     :param drop_percentage: The percentage of the dataset to drop.
     :param steps: The number of steps.
     :param predictor_name1: The name of the predictor.
@@ -102,9 +103,11 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
     labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
     ax.set_xticks(np.arange(1.25, steps + 1.25, 1), labels)
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
-    if not os.path.exists(PATH / dataset.name):
-        os.makedirs(PATH / dataset.name)
-    plt.savefig(PATH / (dataset.name + os.sep + predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.svg'))
+    if not os.path.exists(PATH / exp_type):
+        os.makedirs(PATH / exp_type)
+    if not os.path.exists(PATH / (exp_type + os.sep + dataset.name)):
+        os.makedirs(PATH / (exp_type + os.sep + dataset.name))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.svg'))
 
 
 def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]], dataset: BreastCancer or SpliceJunction or CensusIncome,

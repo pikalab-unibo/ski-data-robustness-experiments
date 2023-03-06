@@ -99,7 +99,7 @@ class RunExperiments(distutils.cmd.Command):
                     if self.function == 'drop':
                         experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
                     else:
-                        experiment_with_data_noise(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                        experiment_with_data_noise(data, uneducated, dataset.name, name, self.population_size, self.metrics, sigma=2, loss=loss)
                 else:
                     if name == 'kins':
                         feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
@@ -120,7 +120,7 @@ class RunExperiments(distutils.cmd.Command):
                     if self.function == 'drop':
                         experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
                     else:
-                        experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                        experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size, self.metrics, sigma=2, loss=loss)
 
 
 class GeneratePlots(distutils.cmd.Command):
@@ -170,17 +170,19 @@ class GenerateComparisonPlots(distutils.cmd.Command):
     def run(self) -> None:
         from figures import plot_distributions_comparison
         from results.drop import PATH as DROP_RESULT_PATH
+        from results.noise import PATH as NOISE_RESULT_PATH
 
+        exp_type = 'noise'  # 'noise'
         educated_predictors = ['kins', 'kill', 'kbann']
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparison plots for {dataset.name} dataset')
-            directory1 = DROP_RESULT_PATH / dataset.name / 'uneducated'
+            directory1 = NOISE_RESULT_PATH / dataset.name / 'uneducated'
             files1 = os.listdir(directory1)
             files1 = [f for f in files1 if f.endswith('.csv')]
             for educated in educated_predictors:
-                directory2 = DROP_RESULT_PATH / dataset.name / educated
+                directory2 = NOISE_RESULT_PATH / dataset.name / educated
                 if not os.path.exists(directory2):
                     continue
                 files2 = os.listdir(directory2)
@@ -191,7 +193,7 @@ class GenerateComparisonPlots(distutils.cmd.Command):
                         results1.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
                     for file in sorted(files2, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
                         results2.append(pd.read_csv(directory2 / file, header=0, sep=",", encoding='utf8'))
-                    plot_distributions_comparison(results1, results2, dataset, 5, 20, 'uneducated', educated, metric)
+                    plot_distributions_comparison(results1, results2, dataset, exp_type, 5, 20, 'uneducated', educated, metric)
 
 
 class GenerateComparativeDistributionCurves(distutils.cmd.Command):
