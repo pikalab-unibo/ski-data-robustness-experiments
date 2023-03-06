@@ -20,20 +20,28 @@ def apply_noise(data: pd.DataFrame, mu: float, sigma: float, column_data_types: 
     np.random.seed(seed)
     data_copy = data.copy()
     noise_indices = np.random.choice(data_copy.index, int(data_copy.shape[0] * ratio), replace=False)
+    if ratio == 0:
+        x, y = data_copy, None
+    else:
+        x, y = data_copy.train_test_split(train_size=ratio, random_state=seed, stratify=data_copy.iloc[:, -1])
     for k, v in column_data_types.items():
         if v == 'float':
             for noise_index in noise_indices:
-                data_copy[k][noise_index] = data_copy[k][noise_index] + np.random.normal(mu, sigma, 1)[0]
+                x[k][noise_index] = x[k][noise_index] + np.random.normal(mu, sigma, 1)[0]
         elif v == 'int':  # also for ordinal categorical data
-            maximum_value = data_copy[k].max()
-            minimum_value = data_copy[k].min()
+            maximum_value = x[k].max()
+            minimum_value = x[k].min()
             for index in noise_indices:
-                data_copy[k][index] = round((data_copy[k][index] + np.random.normal(mu, sigma, 1))[0])
-                if data_copy[k][index] > maximum_value:
-                    data_copy[k][index] = maximum_value
-                elif data_copy[k][index] < minimum_value:
-                    data_copy[k][index] = minimum_value
+                x[k][index] = round((x[k][index] + np.random.normal(mu, sigma, 1))[0])
+                if x[k][index] > maximum_value:
+                    x[k][index] = maximum_value
+                elif x[k][index] < minimum_value:
+                    x[k][index] = minimum_value
         elif v == 'categorical':
             # TODO
             pass
+    if y:
+        data_copy = x.join(y)
+    else:
+        data_copy = x
     return data_copy
