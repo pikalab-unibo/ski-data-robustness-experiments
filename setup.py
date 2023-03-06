@@ -12,6 +12,7 @@ from data import load_splice_junction_dataset, SpliceJunction, load_breast_cance
 from experiments import generate_neural_network_breast_cancer, generate_neural_network_census_income, \
     generate_neural_network_splice_junction
 from knowledge import PATH as KNOWLEDGE_PATH
+from experiments import experiment_with_data_drop, experiment_with_data_noise
 
 
 class LoadDatasets(distutils.cmd.Command):
@@ -39,9 +40,10 @@ class LoadDatasets(distutils.cmd.Command):
         census_dataset.to_csv(CensusIncome.file_name, index=False)
 
 
-class RunExperimentsWithDataDrop(distutils.cmd.Command):
+class RunExperiments(distutils.cmd.Command):
     description = 'run experiments'
-    user_options = [('dataset=', 'd', 'dataset to run the experiments on (b[reast cancer], s[plice junction], c[ensus income])'),
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])'),
+                    ('dataset=', 'd', 'dataset to run the experiments on (b[reast cancer], s[plice junction], c[ensus income])'),
                     ('predictor=', 'p', 'predictors to use (u[neducated], kins, kill, kbann)')]
     metrics = ['accuracy', Precision(), Recall()]
     optimizer = 'adam'
@@ -49,12 +51,19 @@ class RunExperimentsWithDataDrop(distutils.cmd.Command):
     population_size = 30
     datasets = [BreastCancer, SpliceJunction, CensusIncome]
     predictor_names = ['uneducated', 'kins', 'kill', 'kbann']
+    function = 'drop'
 
     def initialize_options(self) -> None:
+        self.type = None
         self.dataset = None
         self.predictor = None
 
     def finalize_options(self) -> None:
+        if self.type:
+            if self.type.lower() == 'd':
+                self.function = 'drop'
+            elif self.type.lower() == 'n':
+                self.function = 'noise'
         if self.dataset:
             if self.dataset.lower() == 'b':
                 self.datasets = [BreastCancer]
@@ -73,7 +82,6 @@ class RunExperimentsWithDataDrop(distutils.cmd.Command):
                 self.predictor_names = ['kbann']
 
     def run(self) -> None:
-        from experiments import experiment_with_data_drop
         get_custom_objects().update(NetBuilder.custom_objects)
         for dataset in self.datasets:
             print(f'Running experiments for {dataset.name} dataset')
@@ -88,7 +96,10 @@ class RunExperimentsWithDataDrop(distutils.cmd.Command):
                 uneducated = generate_neural_network_breast_cancer(self.metrics)
             for name in self.predictor_names:
                 if name == 'uneducated':
-                    experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                    if self.function == 'drop':
+                        experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                    else:
+                        experiment_with_data_noise(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
                 else:
                     if name == 'kins':
                         feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
@@ -106,7 +117,10 @@ class RunExperimentsWithDataDrop(distutils.cmd.Command):
                     for k in knowledge:
                         k.trainable = True
                     predictor = injector.inject(knowledge)
-                    experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                    if self.function == 'drop':
+                        experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                    else:
+                        experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
 
 
 class GeneratePlots(distutils.cmd.Command):
@@ -122,15 +136,17 @@ class GeneratePlots(distutils.cmd.Command):
     def run(self) -> None:
         from figures import plot_accuracy_distributions
         from results.drop import PATH as DROP_RESULT_PATH
+        from results.noise import PATH as NOISE_RESULT_PATH
 
-        predictor_names = ['uneducated', 'kins', 'kill', 'kbann']
-        datasets = [BreastCancer] # , SpliceJunction, CensusIncome]
+        exp_type = 'noise'  # 'noise'
+        predictor_names = ['uneducated', 'kins', 'kill'] # ['uneducated', 'kins', 'kill', 'kbann']
+        datasets = [BreastCancer] # BreastCancer, SpliceJunction, CensusIncome]
         metrics = ['accuracy', 'precision', 'recall']
         for dataset in datasets:
             print(f'Generating plots for {dataset.name} dataset')
             for predictor in predictor_names:
                 results = []
-                directory = DROP_RESULT_PATH / dataset.name / predictor
+                directory = NOISE_RESULT_PATH / dataset.name / predictor
                 if os.path.exists(directory):
                     files = os.listdir(directory)
                     files = [f for f in files if f.endswith('.csv')]
@@ -138,7 +154,7 @@ class GeneratePlots(distutils.cmd.Command):
                         for file in sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
                             results.append(pd.read_csv(directory / file, header=0, sep=",", encoding='utf8'))
                         for metric in metrics:
-                            plot_accuracy_distributions(results, dataset, 5, 20, predictor, metric)
+                            plot_accuracy_distributions(results, dataset, exp_type, 5, 20, predictor, metric)
 
 
 class GenerateComparisonPlots(distutils.cmd.Command):
@@ -192,8 +208,8 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
         from figures import plot_average_accuracy_curves
         from results.drop import PATH as DROP_RESULT_PATH
 
-        educated_predictors = ['kins', 'kill', 'kbann']  # ['kins', 'kill', 'kbann']
-        datasets = [BreastCancer]
+        educated_predictors = ['kins', 'kill']  # ['kins', 'kill', 'kbann']
+        datasets = [CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparative distribution curves for {dataset.name} dataset')
@@ -247,7 +263,7 @@ setup(
     zip_safe=False,
     cmdclass={
         'load_datasets': LoadDatasets,
-        'run_experiments_with_data_drop': RunExperimentsWithDataDrop,
+        'run_experiments': RunExperiments,
         'generate_plots': GeneratePlots,
         'generate_comparison_plots': GenerateComparisonPlots,
         'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,

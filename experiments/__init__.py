@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Model, clone_model
@@ -7,10 +8,12 @@ from tensorflow.python.framework.random_seed import set_seed
 from tensorflow.python.keras.utils.np_utils import to_categorical
 from data import BreastCancer, SpliceJunction, CensusIncome
 from results.drop import PATH as DROP_RESULTS_PATH
+from results.noise import PATH as NOISE_RESULTS_PATH
+from statistics import apply_noise
 
 TEST_RATIO = 1 / 3
 DROP_RATIO = 0.05  # 5% of the data is dropped
-N_STEPS = 19
+N_STEPS = 19  # from 0 to N_STEPS, 0 means no noise, N_STEPS means maximum noise = DROP_RATIO * N_STEPS = 95%
 EPOCHS = 100
 BATCH_SIZE = 32
 VERBOSE = 0
@@ -49,6 +52,31 @@ def generate_neural_network_census_income(metrics: list) -> Model:
     return _generate_uneducated_neural_network(data, [32, 16, 2], metrics)
 
 
+def _create_missing_directories(path: Path, data_name: str, ski_name: str):
+    if not os.path.exists(path / data_name):
+        os.mkdir(path / data_name)
+    if not os.path.exists(path / (data_name + os.sep + ski_name)):
+        os.mkdir(path / (data_name + os.sep + ski_name))
+
+
+def train_and_cumulate_results(train: pd.DataFrame, predictor: Model, ski_name: str, metrics: list, loss: str, results: pd.DataFrame, x_test, y_test, p: int):
+    x_train = train.iloc[:, :-1]
+    y_train = to_categorical(train.iloc[:, -1:])
+    if ski_name == 'kill':
+        predictor_copy = predictor.copy()
+    else:
+        predictor_copy = clone_model(predictor)
+    predictor_copy.set_weights(predictor.get_weights())
+    predictor_copy.compile(loss=loss, optimizer='adam', metrics=metrics)
+    predictor_copy.fit(x_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=VERBOSE)
+    if ski_name == 'kill':
+        predictor_copy = predictor_copy.remove_constraints()
+        predictor_copy.compile(loss=loss, optimizer='adam', metrics=metrics)
+    evaluation = predictor_copy.evaluate(x_test, y_test, verbose=VERBOSE)
+    results.loc[p] = evaluation[1:]
+    print("Accuracy: {:.2f} - Precision: {:.2f} - Recall: {:.2f}".format(evaluation[1], evaluation[2], evaluation[3]))
+
+
 def experiment_with_data_drop(data: pd.DataFrame, predictor: Model, data_name: str, ski_name: str, population: int,
                               metrics: list, drop_size: float = DROP_RATIO, n_steps: int = N_STEPS,
                               test_size: float = TEST_RATIO, seed: int = SEED, loss: str = 'categorical_crossentropy'):
@@ -62,10 +90,7 @@ def experiment_with_data_drop(data: pd.DataFrame, predictor: Model, data_name: s
         predictor = clone_model(predictor)
     for i in range(n_steps):
         print("\n\nStep {}/{}\n".format(i + 1, n_steps))
-        if not os.path.exists(DROP_RESULTS_PATH / data_name):
-            os.mkdir(DROP_RESULTS_PATH / data_name)
-        if not os.path.exists(DROP_RESULTS_PATH / (data_name + os.sep + ski_name)):
-            os.mkdir(DROP_RESULTS_PATH / (data_name + os.sep + ski_name))
+        _create_missing_directories(DROP_RESULTS_PATH, data_name, ski_name)
         file_name = DROP_RESULTS_PATH / (data_name + os.sep + ski_name + os.sep + "{}.csv".format(i + 1))
         if os.path.exists(file_name):
             print("File {} already exists".format(file_name))
@@ -79,19 +104,36 @@ def experiment_with_data_drop(data: pd.DataFrame, predictor: Model, data_name: s
                     new_train, _ = train_test_split(train, test_size=f, random_state=seed + p, stratify=train.iloc[:, -1])
                 else:
                     new_train = train
-                x_train = new_train.iloc[:, :-1]
-                y_train = to_categorical(new_train.iloc[:, -1:])
-                if ski_name == 'kill':
-                    predictor_copy = predictor.copy()
-                else:
-                    predictor_copy = clone_model(predictor)
-                predictor_copy.set_weights(predictor.get_weights())
-                predictor_copy.compile(loss=loss, optimizer='adam', metrics=metrics)
-                predictor_copy.fit(x_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=VERBOSE)
-                if ski_name == 'kill':
-                    predictor_copy = predictor_copy.remove_constraints()
-                    predictor_copy.compile(loss=loss, optimizer='adam', metrics=metrics)
-                evaluation = predictor_copy.evaluate(x_test, y_test, verbose=VERBOSE)
-                results.loc[p] = evaluation[1:]
-                print("Accuracy: {:.2f} - Precision: {:.2f} - Recall: {:.2f}".format(evaluation[1], evaluation[2], evaluation[3]))
+                train_and_cumulate_results(new_train, predictor, ski_name, metrics, loss, results, x_test, y_test, p)
+            results.to_csv(file_name, index=False)
+
+
+def experiment_with_data_noise(data: pd.DataFrame, predictor: Model, data_name: str, ski_name: str, population: int,
+                               metrics: list, mu: float = 0, sigma: float = 1, noise_size: float = DROP_RATIO,
+                               n_steps: int = N_STEPS, test_size: float = TEST_RATIO, seed: int = SEED,
+                               loss: str = 'categorical_crossentropy'):
+    print("Experiment with data noise: {} - {}".format(data_name, ski_name))
+    set_seed(seed)
+    n_steps += 1  # Because the first step is the original dataset
+    train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
+    x_test = test.iloc[:, :-1]
+    y_test = to_categorical(test.iloc[:, -1:])
+    if ski_name == 'kbann':
+        predictor = clone_model(predictor)
+    for i in range(n_steps):
+        print("\n\nStep {}/{}\n".format(i + 1, n_steps))
+        _create_missing_directories(NOISE_RESULTS_PATH, data_name, ski_name)
+        file_name = NOISE_RESULTS_PATH / (data_name + os.sep + ski_name + os.sep + "{}.csv".format(i + 1))
+        if os.path.exists(file_name):
+            print("File {} already exists".format(file_name))
+            continue
+        else:
+            results = pd.DataFrame(columns=['accuracy', 'precision', 'recall'])
+            for p in range(population):
+                print("Population {}/{}".format(p + 1, population))
+                new_train = train.copy()
+                # For now we only support noise on numerical columns
+                column_data_types = {k: 'int' for k in new_train.columns[:-1]}
+                new_train = apply_noise(new_train, mu, sigma, column_data_types, i * noise_size, seed + p + i)
+                train_and_cumulate_results(new_train, predictor, ski_name, metrics, loss, results, x_test, y_test, p)
             results.to_csv(file_name, index=False)

@@ -1,10 +1,10 @@
 data/*.csv
+figures/*/*/*/*.png
+figures/*/*/*/*.pdf
+figures/*/*/*/*.svg
 figures/*/*/*.png
 figures/*/*/*.pdf
 figures/*/*/*.svg
-figures/*/*.png
-figures/*/*.pdf
-figures/*/*.svg
 
 # JetBrains related
 .idea/

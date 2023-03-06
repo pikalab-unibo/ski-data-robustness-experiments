@@ -13,13 +13,14 @@ PATH = Path(__file__).parents[0]
 
 
 def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCancer or SpliceJunction or CensusIncome,
-                                drop_percentage: int, steps: int, predictor_name: str, metric: str):
+                                exp_type: str, drop_percentage: int, steps: int, predictor_name: str, metric: str):
     """
     Generate the box plots af the accuracy distributions.
     For each result in results, select the accuracy column and plot it as a box plot.
     The expected number of results is steps.
     :param results: A list of dataframes containing the results of the experiments.
     :param dataset: The dataset object containing all main information.
+    :param exp_type: The type of the experiment.
     :param drop_percentage: The percentage of the dataset to drop.
     :param steps: The number of steps.
     :param predictor_name: The name of the predictor.
@@ -37,11 +38,13 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
     drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
     labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
     ax.set_xticks(np.arange(1, steps + 1, 1), labels)
-    if not os.path.exists(PATH / dataset.name):
-        os.makedirs(PATH / dataset.name)
-    if not os.path.exists(PATH / (dataset.name + os.sep + predictor_name)):
-        os.makedirs(PATH / (dataset.name + os.sep + predictor_name))
-    plt.savefig(PATH / (dataset.name + os.sep + predictor_name + os.sep + metric + '-distributions.svg'))
+    if not os.path.exists(PATH / exp_type):
+        os.makedirs(PATH / exp_type)
+    if not os.path.exists(PATH / (exp_type + os.sep + dataset.name)):
+        os.makedirs(PATH / (exp_type + os.sep + dataset.name))
+    if not os.path.exists(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name)):
+        os.makedirs(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name + os.sep + metric + '-distributions.svg'))
 
 
 def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.DataFrame],
