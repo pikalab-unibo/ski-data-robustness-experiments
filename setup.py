@@ -101,7 +101,7 @@ class RunExperiments(distutils.cmd.Command):
                     if self.function == 'drop':
                         experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
                     else:
-                        experiment_with_data_noise(data, uneducated, dataset.name, name, self.population_size, self.metrics, sigma=2, loss=loss)
+                        experiment_with_data_noise(data, uneducated, dataset.name, name, self.population_size, self.metrics, sigma=1, loss=loss)
                 else:
                     if name == 'kins':
                         feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
@@ -122,33 +122,41 @@ class RunExperiments(distutils.cmd.Command):
                     if self.function == 'drop':
                         experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
                     else:
-                        experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size, self.metrics, sigma=2, loss=loss)
+                        experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size, self.metrics, sigma=1, loss=loss)
 
 
 class GeneratePlots(distutils.cmd.Command):
     description = 'generate plots'
-    user_options = []
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    exp_type = None
+    experiments = None
 
     def initialize_options(self) -> None:
-        pass
+        self.type = None
 
     def finalize_options(self) -> None:
-        pass
+        if self.type:
+            if self.type.lower() == 'd':
+                self.exp_type = 'drop'
+                self.experiments = 20
+            elif self.type.lower() == 'n':
+                self.exp_type = 'noise'
+                self.experiments = 10
 
     def run(self) -> None:
         from figures import plot_accuracy_distributions
         from results.drop import PATH as DROP_RESULT_PATH
         from results.noise import PATH as NOISE_RESULT_PATH
 
-        exp_type = 'drop'  # 'noise'
-        predictor_names = ['uneducated', 'kins', 'kill'] # ['uneducated', 'kins', 'kill', 'kbann']
+        path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
+        predictor_names = ['uneducated', 'kins', 'kill', 'kbann']
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metrics = ['accuracy', 'precision', 'recall']
         for dataset in datasets:
             print(f'Generating plots for {dataset.name} dataset')
             for predictor in predictor_names:
                 results = []
-                directory = DROP_RESULT_PATH / dataset.name / predictor
+                directory = path / dataset.name / predictor
                 if os.path.exists(directory):
                     files = os.listdir(directory)
                     files = [f for f in files if f.endswith('.csv')]
@@ -156,35 +164,43 @@ class GeneratePlots(distutils.cmd.Command):
                         for file in sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
                             results.append(pd.read_csv(directory / file, header=0, sep=",", encoding='utf8'))
                         for metric in metrics:
-                            plot_accuracy_distributions(results, dataset, exp_type, 5, 20, predictor, metric)
+                            plot_accuracy_distributions(results, dataset, self.exp_type, 5, self.experiments, predictor, metric)
 
 
 class GenerateComparisonPlots(distutils.cmd.Command):
     description = 'generate comparison plots'
-    user_options = []
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    exp_type = None
+    experiments = None
 
     def initialize_options(self) -> None:
-        pass
+        self.type = None
 
     def finalize_options(self) -> None:
-        pass
+        if self.type:
+            if self.type.lower() == 'd':
+                self.exp_type = 'drop'
+                self.experiments = 20
+            elif self.type.lower() == 'n':
+                self.exp_type = 'noise'
+                self.experiments = 10
 
     def run(self) -> None:
         from figures import plot_distributions_comparison
         from results.drop import PATH as DROP_RESULT_PATH
         from results.noise import PATH as NOISE_RESULT_PATH
 
-        exp_type = 'drop'  # 'noise'
+        path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
         educated_predictors = ['kins', 'kill', 'kbann']
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparison plots for {dataset.name} dataset')
-            directory1 = DROP_RESULT_PATH / dataset.name / 'uneducated'
+            directory1 = path / dataset.name / 'uneducated'
             files1 = os.listdir(directory1)
             files1 = [f for f in files1 if f.endswith('.csv')]
             for educated in educated_predictors:
-                directory2 = DROP_RESULT_PATH / dataset.name / educated
+                directory2 = path / dataset.name / educated
                 if not os.path.exists(directory2):
                     continue
                 files2 = os.listdir(directory2)
@@ -195,46 +211,55 @@ class GenerateComparisonPlots(distutils.cmd.Command):
                         results1.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
                     for file in sorted(files2, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
                         results2.append(pd.read_csv(directory2 / file, header=0, sep=",", encoding='utf8'))
-                    plot_distributions_comparison(results1, results2, dataset, exp_type, 5, 20, 'uneducated', educated, metric)
+                    plot_distributions_comparison(results1, results2, dataset, self.exp_type, 5, self.experiments, 'uneducated', educated, metric)
 
 
 class GenerateComparativeDistributionCurves(distutils.cmd.Command):
     description = 'generate comparative distribution curves'
-    user_options = []
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    exp_type = None
+    experiments = None
 
     def initialize_options(self) -> None:
-        pass
+        self.type = None
 
     def finalize_options(self) -> None:
-        pass
+        if self.type:
+            if self.type.lower() == 'd':
+                self.exp_type = 'drop'
+                self.experiments = 20
+            elif self.type.lower() == 'n':
+                self.exp_type = 'noise'
+                self.experiments = 10
 
     def run(self) -> None:
         from figures import plot_average_accuracy_curves
         from results.drop import PATH as DROP_RESULT_PATH
+        from results.noise import PATH as NOISE_RESULT_PATH
 
-        exp_type = 'drop'  # 'noise'
+        path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
         educated_predictors = ['kins', 'kill', 'kbann']
-        datasets = [CensusIncome]
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparative distribution curves for {dataset.name} dataset')
             directory1 = DROP_RESULT_PATH / dataset.name / 'uneducated'
             files1 = os.listdir(directory1)
             files1 = [f for f in files1 if f.endswith('.csv')]
-            paths = [DROP_RESULT_PATH / dataset.name / educated for educated in educated_predictors]
-            paths = [path for path in paths if os.path.exists(path)]
+            paths = [path / dataset.name / educated for educated in educated_predictors]
+            paths = [p for p in paths if os.path.exists(path)]
             files_groups = [os.listdir(path) for path in paths]
             experiments = []
             tmp = []
             for file in sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
                 tmp.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
             experiments.append(tmp)
-            for path, files in zip(paths, files_groups):
+            for p, files in zip(paths, files_groups):
                 tmp = []
                 for file in sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
-                    tmp.append(pd.read_csv(path / file, header=0, sep=",", encoding='utf8'))
+                    tmp.append(pd.read_csv(p / file, header=0, sep=",", encoding='utf8'))
                 experiments.append(tmp)
-            plot_average_accuracy_curves(experiments, dataset, exp_type, 5, 20, educated_predictors, metric)
+            plot_average_accuracy_curves(experiments, dataset, self.exp_type, 5, self.experiments, educated_predictors, metric)
 
 
 setup(

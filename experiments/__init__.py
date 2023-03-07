@@ -13,7 +13,9 @@ from statistics import apply_noise
 
 TEST_RATIO = 1 / 3
 DROP_RATIO = 0.05  # 5% of the data is dropped
-N_STEPS = 19  # from 0 to N_STEPS, 0 means no noise, N_STEPS means maximum noise = DROP_RATIO * N_STEPS = 95%
+N_STEP_DROP = 19  # from 0 to N_STEPS, 0 means no noise, N_STEPS means maximum noise = DROP_RATIO * N_STEPS = 95%
+N_STEP_NOISE = 10
+NOISE = 1
 EPOCHS = 100
 BATCH_SIZE = 32
 VERBOSE = 0
@@ -79,7 +81,7 @@ def train_and_cumulate_results(train: pd.DataFrame, predictor: Model, ski_name: 
 
 
 def experiment_with_data_drop(data: pd.DataFrame, predictor: Model, data_name: str, ski_name: str, population: int,
-                              metrics: list, drop_size: float = DROP_RATIO, n_steps: int = N_STEPS,
+                              metrics: list, drop_size: float = DROP_RATIO, n_steps: int = N_STEP_DROP,
                               test_size: float = TEST_RATIO, seed: int = SEED, loss: str = 'categorical_crossentropy'):
     print("Experiment with data drop: {} - {}".format(data_name, ski_name))
     n_steps += 1  # Because the first step is the original dataset
@@ -110,16 +112,15 @@ def experiment_with_data_drop(data: pd.DataFrame, predictor: Model, data_name: s
 
 
 def experiment_with_data_noise(data: pd.DataFrame, predictor: Model, data_name: str, ski_name: str, population: int,
-                               metrics: list, mu: float = 0, sigma: float = 1, noise_size: float = DROP_RATIO,
-                               n_steps: int = N_STEPS, test_size: float = TEST_RATIO, seed: int = SEED,
+                               metrics: list, mu: float = 0, sigma: float = 0, n_steps: int = N_STEP_NOISE,
+                               noise: float = NOISE, test_size: float = TEST_RATIO, seed: int = SEED,
                                loss: str = 'categorical_crossentropy'):
     print("Experiment with data noise: {} - {}".format(data_name, ski_name))
-    set_seed(seed)
-    n_steps += 1  # Because the first step is the original dataset
     train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
     if ski_name == 'kbann':
+        set_seed(seed)
         predictor = clone_model(predictor)
     for i in range(n_steps):
         print("\n\nStep {}/{}\n".format(i + 1, n_steps))
@@ -135,6 +136,6 @@ def experiment_with_data_noise(data: pd.DataFrame, predictor: Model, data_name: 
                 new_train = train.copy()
                 # For now we only support noise on numerical columns
                 column_data_types = {k: 'int' for k in new_train.columns[:-1]}
-                new_train = apply_noise(new_train, mu, sigma, column_data_types, i * noise_size, seed + p + i)
+                new_train = apply_noise(new_train, mu, sigma + (i + 1) * noise, column_data_types, seed + p + i)
                 train_and_cumulate_results(new_train, predictor, ski_name, metrics, loss, results, x_test, y_test, p)
             results.to_csv(file_name, index=False)
