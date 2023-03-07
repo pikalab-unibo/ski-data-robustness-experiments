@@ -12,6 +12,13 @@ mpl.use('TkAgg')  # !IMPORTANT
 PATH = Path(__file__).parents[0]
 
 
+def _create_missing_directories(path: Path, exp_type: str, dataset: BreastCancer or SpliceJunction or CensusIncome):
+    if not os.path.exists(path / exp_type):
+        os.makedirs(path / exp_type)
+    if not os.path.exists(path / (exp_type + os.sep + dataset.name)):
+        os.makedirs(path / (exp_type + os.sep + dataset.name))
+
+
 def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCancer or SpliceJunction or CensusIncome,
                                 exp_type: str, drop_percentage: int, steps: int, predictor_name: str, metric: str):
     """
@@ -38,10 +45,7 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
     drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
     labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
     ax.set_xticks(np.arange(1, steps + 1, 1), labels)
-    if not os.path.exists(PATH / exp_type):
-        os.makedirs(PATH / exp_type)
-    if not os.path.exists(PATH / (exp_type + os.sep + dataset.name)):
-        os.makedirs(PATH / (exp_type + os.sep + dataset.name))
+    _create_missing_directories(PATH, exp_type, dataset)
     if not os.path.exists(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name)):
         os.makedirs(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name))
     plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name + os.sep + metric + '-distributions.svg'))
@@ -103,19 +107,17 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
     labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
     ax.set_xticks(np.arange(1.25, steps + 1.25, 1), labels)
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
-    if not os.path.exists(PATH / exp_type):
-        os.makedirs(PATH / exp_type)
-    if not os.path.exists(PATH / (exp_type + os.sep + dataset.name)):
-        os.makedirs(PATH / (exp_type + os.sep + dataset.name))
+    _create_missing_directories(PATH, exp_type, dataset)
     plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.svg'))
 
 
 def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]], dataset: BreastCancer or SpliceJunction or CensusIncome,
-                                 drop_percentage: int, steps: int, predictor_names: list[str], metric: str):
+                                 exp_type: str, drop_percentage: int, steps: int, predictor_names: list[str], metric: str):
     """
     Generate the average accuracy curves.
     :param experiments: A list of lists of dataframes containing the results of the experiments.
     :param dataset: The dataset object containing all main information.
+    :param exp_type: The type of the experiment.
     :param drop_percentage: The percentage of the dataset to drop.
     :param steps: The number of steps.
     :param predictor_names: The names of the predictors.
@@ -140,6 +142,5 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]], dataset:
     labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
     ax.set_xticks(np.arange(1, steps + 1, 1), labels)
     plt.legend(loc='upper right')
-    if not os.path.exists(PATH / dataset.name):
-        os.makedirs(PATH / dataset.name)
-    plt.savefig(PATH / (dataset.name + os.sep + '-'.join(predictor_names) + '-' + metric + '-average-curves.svg'))
+    _create_missing_directories(PATH, exp_type, dataset)
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(predictor_names) + '-' + metric + '-average-curves.svg'))

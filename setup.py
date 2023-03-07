@@ -6,11 +6,12 @@ from psyki.fuzzifiers.netbuilder import NetBuilder
 from psyki.logic.prolog import TuProlog
 from psyki.ski import Injector
 from setuptools import find_packages, setup
+from tensorflow.python.framework.random_seed import set_seed
 from tensorflow.python.keras.metrics import Precision, Recall
 from data import load_splice_junction_dataset, SpliceJunction, load_breast_cancer_dataset, BreastCancer, \
     load_census_income_dataset, CensusIncome
 from experiments import generate_neural_network_breast_cancer, generate_neural_network_census_income, \
-    generate_neural_network_splice_junction
+    generate_neural_network_splice_junction, SEED
 from knowledge import PATH as KNOWLEDGE_PATH
 from experiments import experiment_with_data_drop, experiment_with_data_noise
 
@@ -83,6 +84,7 @@ class RunExperiments(distutils.cmd.Command):
 
     def run(self) -> None:
         get_custom_objects().update(NetBuilder.custom_objects)
+        set_seed(SEED)
         for dataset in self.datasets:
             print(f'Running experiments for {dataset.name} dataset')
             data = pd.read_csv(dataset.file_name, header=0, sep=",", encoding='utf8')
@@ -138,15 +140,15 @@ class GeneratePlots(distutils.cmd.Command):
         from results.drop import PATH as DROP_RESULT_PATH
         from results.noise import PATH as NOISE_RESULT_PATH
 
-        exp_type = 'noise'  # 'noise'
+        exp_type = 'drop'  # 'noise'
         predictor_names = ['uneducated', 'kins', 'kill'] # ['uneducated', 'kins', 'kill', 'kbann']
-        datasets = [BreastCancer] # BreastCancer, SpliceJunction, CensusIncome]
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metrics = ['accuracy', 'precision', 'recall']
         for dataset in datasets:
             print(f'Generating plots for {dataset.name} dataset')
             for predictor in predictor_names:
                 results = []
-                directory = NOISE_RESULT_PATH / dataset.name / predictor
+                directory = DROP_RESULT_PATH / dataset.name / predictor
                 if os.path.exists(directory):
                     files = os.listdir(directory)
                     files = [f for f in files if f.endswith('.csv')]
@@ -172,17 +174,17 @@ class GenerateComparisonPlots(distutils.cmd.Command):
         from results.drop import PATH as DROP_RESULT_PATH
         from results.noise import PATH as NOISE_RESULT_PATH
 
-        exp_type = 'noise'  # 'noise'
+        exp_type = 'drop'  # 'noise'
         educated_predictors = ['kins', 'kill', 'kbann']
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparison plots for {dataset.name} dataset')
-            directory1 = NOISE_RESULT_PATH / dataset.name / 'uneducated'
+            directory1 = DROP_RESULT_PATH / dataset.name / 'uneducated'
             files1 = os.listdir(directory1)
             files1 = [f for f in files1 if f.endswith('.csv')]
             for educated in educated_predictors:
-                directory2 = NOISE_RESULT_PATH / dataset.name / educated
+                directory2 = DROP_RESULT_PATH / dataset.name / educated
                 if not os.path.exists(directory2):
                     continue
                 files2 = os.listdir(directory2)
@@ -210,7 +212,8 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
         from figures import plot_average_accuracy_curves
         from results.drop import PATH as DROP_RESULT_PATH
 
-        educated_predictors = ['kins', 'kill']  # ['kins', 'kill', 'kbann']
+        exp_type = 'drop'  # 'noise'
+        educated_predictors = ['kins', 'kill', 'kbann']
         datasets = [CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
@@ -231,7 +234,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
                 for file in sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
                     tmp.append(pd.read_csv(path / file, header=0, sep=",", encoding='utf8'))
                 experiments.append(tmp)
-            plot_average_accuracy_curves(experiments, dataset, 5, 20, educated_predictors, metric)
+            plot_average_accuracy_curves(experiments, dataset, exp_type, 5, 20, educated_predictors, metric)
 
 
 setup(

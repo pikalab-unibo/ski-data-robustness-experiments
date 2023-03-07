@@ -62,6 +62,7 @@ def _create_missing_directories(path: Path, data_name: str, ski_name: str):
 def train_and_cumulate_results(train: pd.DataFrame, predictor: Model, ski_name: str, metrics: list, loss: str, results: pd.DataFrame, x_test, y_test, p: int):
     x_train = train.iloc[:, :-1]
     y_train = to_categorical(train.iloc[:, -1:])
+    set_seed(p)
     if ski_name == 'kill':
         predictor_copy = predictor.copy()
     else:
@@ -81,12 +82,12 @@ def experiment_with_data_drop(data: pd.DataFrame, predictor: Model, data_name: s
                               metrics: list, drop_size: float = DROP_RATIO, n_steps: int = N_STEPS,
                               test_size: float = TEST_RATIO, seed: int = SEED, loss: str = 'categorical_crossentropy'):
     print("Experiment with data drop: {} - {}".format(data_name, ski_name))
-    set_seed(seed)
     n_steps += 1  # Because the first step is the original dataset
     train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
     if ski_name == 'kbann':
+        set_seed(seed)
         predictor = clone_model(predictor)
     for i in range(n_steps):
         print("\n\nStep {}/{}\n".format(i + 1, n_steps))
