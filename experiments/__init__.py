@@ -117,6 +117,7 @@ def experiment_with_data_noise(data: pd.DataFrame, predictor: Model, data_name: 
                                loss: str = 'categorical_crossentropy'):
     print("Experiment with data noise: {} - {}".format(data_name, ski_name))
     train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
+    sigma_normaliser = 10 if data_name == SpliceJunction.name else 1
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
     if ski_name == 'kbann':
@@ -134,8 +135,6 @@ def experiment_with_data_noise(data: pd.DataFrame, predictor: Model, data_name: 
             for p in range(population):
                 print("Population {}/{}".format(p + 1, population))
                 new_train = train.copy()
-                # For now we only support noise on numerical columns
-                column_data_types = {k: 'int' for k in new_train.columns[:-1]}
-                new_train = apply_noise(new_train, mu, sigma + (i + 1) * noise, column_data_types, seed + p + i)
+                new_train = apply_noise(new_train, mu, (sigma + (i * noise)) / sigma_normaliser, data_name, seed + p + i)
                 train_and_cumulate_results(new_train, predictor, ski_name, metrics, loss, results, x_test, y_test, p)
             results.to_csv(file_name, index=False)
