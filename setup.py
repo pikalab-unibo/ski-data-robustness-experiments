@@ -243,7 +243,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparative distribution curves for {dataset.name} dataset')
-            directory1 = DROP_RESULT_PATH / dataset.name / 'uneducated'
+            directory1 = path / dataset.name / 'uneducated'
             files1 = os.listdir(directory1)
             files1 = [f for f in files1 if f.endswith('.csv')]
             paths = [path / dataset.name / educated for educated in educated_predictors]

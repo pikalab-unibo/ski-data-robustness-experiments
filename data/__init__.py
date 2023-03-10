@@ -63,6 +63,10 @@ class CensusIncome(object):
     one_hot_features: list[str] = ["WorkClass", "MaritalStatus", "Occupation", "Relationship", "NativeCountry"]
     class_mapping: dict[str, int] = {'0.0': 0, '1.0': 1}
     class_mapping_short: dict[str, int] = {'0.0': 0, '1.0': 1}
+    integer_features: list[str] = ["Age", "HoursPerWeek"]
+    ordinal_features: list[str] = ["EducationNumeric"]
+    binary_features: list[str] = ["Sex", "CapitalGain", "CapitalLoss"]
+    nominal_features: list[str] = ["WorkClass", "MaritalStatus", "Occupation", "Relationship", "NativeCountry"]
 
 
 def load_splice_junction_dataset(binary_features: bool = False, numeric_output: bool = False) -> pd.DataFrame:
