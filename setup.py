@@ -177,7 +177,7 @@ class ComputeMetrics(distutils.cmd.Command):
         for dataset in datasets:
             for metric in metrics:
                 robustness = compute_robustness(self.function, dataset, metric)
-                robustness_dict[dataset][metric] = robustness
+                robustness_dict[dataset.name][metric] = robustness
         print(robustness_dict)
 
 
