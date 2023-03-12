@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -214,3 +215,51 @@ def _compute_kl_div(data1: pd.DataFrame, data2: pd.DataFrame) -> float:
     print('kl value: {}'.format(kl))
 
     return kl
+
+
+def compute_robustness(perturbation: str, dataset: object, metric: str) -> dict:
+    n_experiments = 10 if perturbation == 'noise' else 20
+    models = ['kbann', 'kill', 'kins', 'uneducated']
+    robustness_dict = {model: 0 for model in models}
+    for model in models:
+        model_performance_at_beginning = pd.read_csv(os.path.join('results',
+                                                                  'drop',
+                                                                  dataset.name,
+                                                                  model,
+                                                                  '1.csv'))
+        model_performance_at_beginning = np.mean(model_performance_at_beginning[metric])
+
+        divergences_sum = 0.
+        perf_mae = 0.
+
+        first_experiment_index = 1 if perturbation == 'noise' else 2
+        for index in range(first_experiment_index, n_experiments + 1):
+            divergences_data = pd.read_csv(os.path.join('results',
+                                                        perturbation,
+                                                        dataset.name,
+                                                        'divergences',
+                                                        '{}.csv'.format(index)))
+            divergence = np.mean(divergences_data['divergence'])
+            divergences_sum += divergence
+
+            model_performance_at_index = pd.read_csv(os.path.join('results',
+                                                                  perturbation,
+                                                                  dataset.name,
+                                                                  model,
+                                                                  '{}.csv'.format(index)))
+            model_performance_at_index = np.mean(model_performance_at_index[metric])
+
+            perf_mae += abs(model_performance_at_index - model_performance_at_beginning)
+
+        # print(f'divergences_sum: {divergences_sum}')
+        # print(f'perf_mae: {perf_mae}')
+
+        # robustness = (divergences_sum / n_experiments) / (perf_mae / n_experiments)
+        robustness = (divergences_sum / perf_mae) / n_experiments
+        robustness_dict[model] = robustness
+
+    for model in ['kbann', 'kill', 'kins']:
+        robustness_dict[model] /= robustness_dict['uneducated']
+    del robustness_dict['uneducated']
+
+    return robustness_dict

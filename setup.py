@@ -19,6 +19,7 @@ from figures import plot_cm
 from knowledge import PATH as KNOWLEDGE_PATH, compute_confusion_matrix
 from experiments import experiment_with_data_drop, experiment_with_data_noise, \
     compute_divergence_over_experiments_with_data_noise, compute_divergence_over_experiments_experiment_with_data_drop
+from statistics import compute_robustness
 
 
 class LoadDatasets(distutils.cmd.Command):
@@ -150,6 +151,34 @@ class RunExperimentsDivergence(RunExperiments):
                 compute_divergence_over_experiments_with_data_noise(data, dataset.name,
                                                                     self.population_size,
                                                                     sigma=1)
+
+
+class ComputeMetrics(distutils.cmd.Command):
+    description = 'print robustness metric'
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    exp_type = None
+    experiments = None
+    function = 'drop'
+
+    def initialize_options(self) -> None:
+        self.type = None
+
+    def finalize_options(self) -> None:
+        if self.type:
+            if self.type.lower() == 'd':
+                self.function = 'drop'
+            elif self.type.lower() == 'n':
+                self.function = 'noise'
+
+    def run(self) -> None:
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        metrics = ['accuracy']
+        robustness_dict = {dataset.name: {metric: None for metric in metrics} for dataset in datasets}
+        for dataset in datasets:
+            for metric in metrics:
+                robustness = compute_robustness(self.function, dataset, metric)
+                robustness_dict[dataset][metric] = robustness
+        print(robustness_dict)
 
 
 class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
@@ -378,6 +407,7 @@ setup(
         'load_datasets': LoadDatasets,
         'run_experiments': RunExperiments,
         'run_divergence': RunExperimentsDivergence,
+        'print_robustness': ComputeMetrics,
         'generate_plots': GeneratePlots,
         'generate_comparison_plots': GenerateComparisonPlots,
         'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,
