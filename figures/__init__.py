@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 import matplotlib as mpl
 from data import BreastCancer, SpliceJunction, CensusIncome
 from experiments import TEST_RATIO
+from mlxtend.plotting import plot_confusion_matrix
 
 mpl.use('TkAgg')  # !IMPORTANT
 
@@ -39,12 +40,19 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
     ax = fig.add_subplot(111)
     ax.boxplot([result[metric] for result in results], labels=[str(i) for i in range(1, steps + 1)], widths=0.9)
     plt.title(dataset.name.capitalize().replace('-', ' ') + ' ' + predictor_name + ' ' + metric + ' distributions')
-    plt.xlabel('Cardinality of the training set')
     plt.ylabel(metric.capitalize() + ' on test set')
-    drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
-    drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
-    labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
-    ax.set_xticks(np.arange(1, steps + 1, 1), labels)
+    if exp_type == 'drop':
+        plt.xlabel('Cardinality of the training set')
+        drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
+        drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
+        labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels)
+    elif exp_type == 'noise':
+        plt.xlabel('Noise level (sigma)')
+        if dataset.name == SpliceJunction.name:
+            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)])
+        else:
+            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)])
     _create_missing_directories(PATH, exp_type, dataset)
     if not os.path.exists(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name)):
         os.makedirs(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name))
@@ -100,12 +108,19 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
                     flierprops=dict(color=main_color2, markeredgecolor=main_color2),
                     medianprops=dict(color=main_color2), )
     plt.title(dataset.name.capitalize().replace('-', ' ') + ' ' + predictor_name1 + ' vs ' + predictor_name2 + ' ' + metric + ' distributions')
-    plt.xlabel('Cardinality of the training set')
     plt.ylabel(metric.capitalize() + ' on test set')
-    drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
-    drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
-    labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
-    ax.set_xticks(np.arange(1.25, steps + 1.25, 1), labels)
+    if exp_type == 'drop':
+        plt.xlabel('Cardinality of the training set')
+        drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
+        drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
+        labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
+        ax.set_xticks(np.arange(1.25, steps + 1.25, 1), labels)
+    elif exp_type == 'noise':
+        plt.xlabel('Noise level (sigma)')
+        if dataset.name == SpliceJunction.name:
+            ax.set_xticks(np.arange(1.25, steps + 1.25, 1), [f'{i / 10}' for i in range(0, steps)])
+        else:
+            ax.set_xticks(np.arange(1.25, steps + 1.25, 1), [f'{i}' for i in range(0, steps)])
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
     plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.svg'))
@@ -135,12 +150,24 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]], dataset:
         # ax.fill_between(np.arange(1, steps + 1, 1), np.array(curve) - np.array(std_devs),
         #                 np.array(curve) + np.array(std_devs), alpha=0.2)
     plt.title(dataset.name.capitalize().replace('-', ' ') + ' ' + metric + ' average curves')
-    plt.xlabel('Cardinality of the training set')
     plt.ylabel(metric.capitalize() + ' on test set')
-    drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
-    drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
-    labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
-    ax.set_xticks(np.arange(1, steps + 1, 1), labels)
+    if exp_type == 'drop':
+        plt.xlabel('Cardinality of the training set')
+        drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
+        drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
+        labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels)
+    elif exp_type == 'noise':
+        plt.xlabel('Noise level (sigma)')
+        if dataset.name == SpliceJunction.name:
+            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)])
+        else:
+            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)])
     plt.legend(loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
     plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(predictor_names) + '-' + metric + '-average-curves.svg'))
+
+
+def plot_cm(data: np.ndarray, class_names: list[str], dataset_name: str):
+    fig, ax = plot_confusion_matrix(data, show_absolute=True, show_normed=True, colorbar=True, class_names=class_names)
+    fig.savefig(PATH / (dataset_name + '.svg'))

@@ -1,5 +1,6 @@
 import distutils.cmd
 import os
+from pathlib import Path
 import pandas as pd
 from keras.utils.generic_utils import get_custom_objects
 from psyki.fuzzifiers.netbuilder import NetBuilder
@@ -7,12 +8,15 @@ from psyki.logic.prolog import TuProlog
 from psyki.ski import Injector
 from setuptools import find_packages, setup
 from tensorflow.python.framework.random_seed import set_seed
+from tensorflow.keras import Model
+from tensorflow.keras.layers import Concatenate
 from tensorflow.python.keras.metrics import Precision, Recall
 from data import load_splice_junction_dataset, SpliceJunction, load_breast_cancer_dataset, BreastCancer, \
     load_census_income_dataset, CensusIncome
 from experiments import generate_neural_network_breast_cancer, generate_neural_network_census_income, \
     generate_neural_network_splice_junction, SEED
-from knowledge import PATH as KNOWLEDGE_PATH
+from figures import plot_cm
+from knowledge import PATH as KNOWLEDGE_PATH, compute_confusion_matrix
 from experiments import experiment_with_data_drop, experiment_with_data_noise
 
 
@@ -125,6 +129,39 @@ class RunExperiments(distutils.cmd.Command):
                         experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size, self.metrics, sigma=1, loss=loss)
 
 
+class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
+    description = 'generate comparative distribution curves'
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    exp_type = None
+    experiments = None
+
+    def initialize_options(self) -> None:
+        pass
+
+    def finalize_options(self) -> None:
+        pass
+
+    def run(self) -> None:
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]  # , SpliceJunction, CensusIncome BreastCancer
+        metrics = ['accuracy']
+        for dataset in datasets:
+            data = pd.read_csv(dataset.file_name, header=0, sep=",", encoding='utf8')
+            knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+            if dataset.name == BreastCancer.name:
+                predictor = generate_neural_network_breast_cancer(metrics)
+            elif dataset.name == SpliceJunction.name:
+                predictor = generate_neural_network_splice_junction(metrics)
+            else:  # elif dataset.name == CensusIncome.name:
+                predictor = generate_neural_network_census_income(metrics)
+            feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
+            fuzzifier = NetBuilder(predictor.input, feature_mapping)
+            output = Concatenate(axis=1)(fuzzifier.visit(knowledge))
+            predictor = Model(predictor.input, output)
+            predictor.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+            cm = compute_confusion_matrix(data, predictor, dataset.name).to_numpy()
+            plot_cm(cm, list(dataset.class_mapping_short.keys()), dataset.name)
+
+
 class GeneratePlots(distutils.cmd.Command):
     description = 'generate plots'
     user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
@@ -141,7 +178,7 @@ class GeneratePlots(distutils.cmd.Command):
                 self.experiments = 20
             elif self.type.lower() == 'n':
                 self.exp_type = 'noise'
-                self.experiments = 10
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_accuracy_distributions
@@ -159,10 +196,14 @@ class GeneratePlots(distutils.cmd.Command):
                 directory = path / dataset.name / predictor
                 if os.path.exists(directory):
                     files = os.listdir(directory)
-                    files = [f for f in files if f.endswith('.csv')]
+                    files = sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()])))
+                    files = [directory / f for f in files if f.endswith('.csv')]
                     if len(files) > 0:
-                        for file in sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
-                            results.append(pd.read_csv(directory / file, header=0, sep=",", encoding='utf8'))
+                        first_drop = DROP_RESULT_PATH / dataset.name / predictor / '1.csv'
+                        if first_drop not in files:
+                            files.insert(0, first_drop)
+                        for file in files:
+                            results.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
                         for metric in metrics:
                             plot_accuracy_distributions(results, dataset, self.exp_type, 5, self.experiments, predictor, metric)
 
@@ -183,7 +224,7 @@ class GenerateComparisonPlots(distutils.cmd.Command):
                 self.experiments = 20
             elif self.type.lower() == 'n':
                 self.exp_type = 'noise'
-                self.experiments = 10
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_distributions_comparison
@@ -198,19 +239,27 @@ class GenerateComparisonPlots(distutils.cmd.Command):
             print(f'Generating comparison plots for {dataset.name} dataset')
             directory1 = path / dataset.name / 'uneducated'
             files1 = os.listdir(directory1)
-            files1 = [f for f in files1 if f.endswith('.csv')]
+            files1 = sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()])))
+            files1 = [directory1 / f for f in files1 if f.endswith('.csv')]
+            first_drop = DROP_RESULT_PATH / dataset.name / 'uneducated' / '1.csv'
+            if first_drop not in files1:
+                files1.insert(0, first_drop)
             for educated in educated_predictors:
                 directory2 = path / dataset.name / educated
                 if not os.path.exists(directory2):
                     continue
                 files2 = os.listdir(directory2)
-                files2 = [f for f in files2 if f.endswith('.csv')]
+                files2 = sorted(files2, key=lambda x: int("".join([i for i in x if i.isdigit()])))
+                files2 = [directory2 / f for f in files2 if f.endswith('.csv')]
+                first_drop = DROP_RESULT_PATH / dataset.name / educated / '1.csv'
+                if first_drop not in files2:
+                    files2.insert(0, first_drop)
                 results1, results2 = [], []
                 if 0 < len(files1) == len(files2):
-                    for file in sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
-                        results1.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
-                    for file in sorted(files2, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
-                        results2.append(pd.read_csv(directory2 / file, header=0, sep=",", encoding='utf8'))
+                    for file in files1:
+                        results1.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
+                    for file in files2:
+                        results2.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
                     plot_distributions_comparison(results1, results2, dataset, self.exp_type, 5, self.experiments, 'uneducated', educated, metric)
 
 
@@ -230,7 +279,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
                 self.experiments = 20
             elif self.type.lower() == 'n':
                 self.exp_type = 'noise'
-                self.experiments = 10
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_average_accuracy_curves
@@ -239,25 +288,34 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
 
         path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
         educated_predictors = ['kins', 'kill', 'kbann']
-        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        datasets = [CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparative distribution curves for {dataset.name} dataset')
             directory1 = path / dataset.name / 'uneducated'
             files1 = os.listdir(directory1)
-            files1 = [f for f in files1 if f.endswith('.csv')]
+            files1 = sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()])))
+            files1 = [directory1 / f for f in files1 if f.endswith('.csv')]
+            first_drop = DROP_RESULT_PATH / dataset.name / 'uneducated' / '1.csv'
+            if first_drop not in files1:
+                files1.insert(0, first_drop)
             paths = [path / dataset.name / educated for educated in educated_predictors]
             paths = [p for p in paths if os.path.exists(path)]
             files_groups = [os.listdir(path) for path in paths]
             experiments = []
             tmp = []
-            for file in sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
+            for file in files1:
                 tmp.append(pd.read_csv(directory1 / file, header=0, sep=",", encoding='utf8'))
             experiments.append(tmp)
             for p, files in zip(paths, files_groups):
                 tmp = []
-                for file in sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()]))):
-                    tmp.append(pd.read_csv(p / file, header=0, sep=",", encoding='utf8'))
+                files = sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()])))
+                complete_files = [p / file for file in files if file.endswith('.csv')]
+                first_drop = DROP_RESULT_PATH / Path(*p.parts[-2:]) / '1.csv'
+                if first_drop not in complete_files:
+                    complete_files.insert(0, first_drop)
+                for file in complete_files:
+                    tmp.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
                 experiments.append(tmp)
             plot_average_accuracy_curves(experiments, dataset, self.exp_type, 5, self.experiments, educated_predictors, metric)
 
@@ -297,5 +355,6 @@ setup(
         'generate_plots': GeneratePlots,
         'generate_comparison_plots': GenerateComparisonPlots,
         'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,
+        'generate_knowledge_confusion_matrix': GenerateKnowledgeConfusionMatrix,
     },
 )
