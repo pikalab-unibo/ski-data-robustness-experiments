@@ -145,12 +145,9 @@ class RunExperimentsDivergence(RunExperiments):
             print(f'Running experiments for {dataset.name} dataset')
             data = pd.read_csv(dataset.file_name, header=0, sep=",", encoding='utf8')
             if self.function == 'drop':
-                compute_divergence_over_experiments_experiment_with_data_drop(data, dataset.name,
-                                                                              self.population_size)
+                compute_divergence_over_experiments_experiment_with_data_drop(data, dataset.name, self.population_size)
             else:
-                compute_divergence_over_experiments_with_data_noise(data, dataset.name,
-                                                                    self.population_size,
-                                                                    sigma=1)
+                compute_divergence_over_experiments_with_data_noise(data, dataset.name, self.population_size, sigma=1)
 
 
 class ComputeMetrics(distutils.cmd.Command):
@@ -171,14 +168,15 @@ class ComputeMetrics(distutils.cmd.Command):
                 self.function = 'noise'
 
     def run(self) -> None:
+        from results import PATH as RESULT_PATH
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metrics = ['accuracy']
-        robustness_dict = {dataset.name: {metric: None for metric in metrics} for dataset in datasets}
+        robustness = {}
         for dataset in datasets:
             for metric in metrics:
                 robustness = compute_robustness(self.function, dataset, metric)
-                robustness_dict[dataset.name][metric] = robustness
-        print(robustness_dict)
+            result = pd.DataFrame([robustness])
+            result.to_csv(RESULT_PATH / self.function / dataset.name / 'robustness.csv', index=False)
 
 
 class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
@@ -257,8 +255,7 @@ class GeneratePlots(distutils.cmd.Command):
                         for file in files:
                             results.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
                         for metric in metrics:
-                            plot_accuracy_distributions(results, dataset, self.exp_type, 5, self.experiments, predictor,
-                                                        metric)
+                            plot_accuracy_distributions(results, dataset, self.exp_type, 5, self.experiments, predictor, metric)
 
 
 class GenerateComparisonPlots(distutils.cmd.Command):
@@ -341,7 +338,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
 
         path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
         educated_predictors = ['kins', 'kill', 'kbann']
-        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        datasets = [BreastCancer]
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparative distribution curves for {dataset.name} dataset')
@@ -370,8 +367,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
                 for file in complete_files:
                     tmp.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
                 experiments.append(tmp)
-            plot_average_accuracy_curves(experiments, dataset, self.exp_type, 5, self.experiments, educated_predictors,
-                                         metric)
+            plot_average_accuracy_curves(experiments, dataset, self.exp_type, 5, self.experiments, educated_predictors, metric)
 
 
 setup(
@@ -407,7 +403,7 @@ setup(
         'load_datasets': LoadDatasets,
         'run_experiments': RunExperiments,
         'run_divergence': RunExperimentsDivergence,
-        'print_robustness': ComputeMetrics,
+        'compute_robustness': ComputeMetrics,
         'generate_plots': GeneratePlots,
         'generate_comparison_plots': GenerateComparisonPlots,
         'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,
