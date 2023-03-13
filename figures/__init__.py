@@ -144,7 +144,12 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]], dataset:
     ax = fig.add_subplot(111)
     predictor_names.insert(0, 'uneducated')
     for i in range(len(experiments)):
-        curve = [np.mean(distribution[metric]) for distribution in experiments[i]]  # means of the distributions
+        if metric == 'f1':
+            precisions = [distribution['precision'] for distribution in experiments[i]]
+            recalls = [distribution['recall'] for distribution in experiments[i]]
+            curve = [np.mean((2*p*r)/(p+r)) for p, r in zip(precisions, recalls)]
+        else:
+            curve = [np.mean(distribution[metric]) for distribution in experiments[i]]  # means of the distributions
         # std_devs = [np.std(distribution[metric]) for distribution in experiments[i]]  # std devs of the distributions
         ax.plot(np.arange(1, steps + 1, 1), curve, label=predictor_names[i], linewidth=2)
         # ax.fill_between(np.arange(1, steps + 1, 1), np.array(curve) - np.array(std_devs),
