@@ -288,7 +288,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
 
         path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
         educated_predictors = ['kins', 'kill', 'kbann']
-        datasets = [CensusIncome]
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
             print(f'Generating comparative distribution curves for {dataset.name} dataset')
