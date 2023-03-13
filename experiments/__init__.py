@@ -9,7 +9,7 @@ from tensorflow.python.keras.utils.np_utils import to_categorical
 from data import BreastCancer, SpliceJunction, CensusIncome
 from results.drop import PATH as DROP_RESULTS_PATH
 from results.noise import PATH as NOISE_RESULTS_PATH
-from statistics import apply_noise
+from statistics import apply_noise, compute_divergence
 
 TEST_RATIO = 1 / 3
 DROP_RATIO = 0.05  # 5% of the data is dropped
@@ -61,7 +61,8 @@ def _create_missing_directories(path: Path, data_name: str, ski_name: str):
         os.mkdir(path / (data_name + os.sep + ski_name))
 
 
-def train_and_cumulate_results(train: pd.DataFrame, predictor: Model, ski_name: str, metrics: list, loss: str, results: pd.DataFrame, x_test, y_test, p: int):
+def train_and_cumulate_results(train: pd.DataFrame, predictor: Model, ski_name: str, metrics: list, loss: str,
+                               results: pd.DataFrame, x_test, y_test, p: int):
     x_train = train.iloc[:, :-1]
     y_train = to_categorical(train.iloc[:, -1:])
     set_seed(p)
@@ -104,7 +105,8 @@ def experiment_with_data_drop(data: pd.DataFrame, predictor: Model, data_name: s
             for p in range(population):
                 print("Population {}/{}".format(p + 1, population))
                 if f > 0:
-                    new_train, _ = train_test_split(train, test_size=f, random_state=seed + p, stratify=train.iloc[:, -1])
+                    new_train, _ = train_test_split(train, test_size=f, random_state=seed + p,
+                                                    stratify=train.iloc[:, -1])
                 else:
                     new_train = train
                 train_and_cumulate_results(new_train, predictor, ski_name, metrics, loss, results, x_test, y_test, p)
@@ -135,6 +137,71 @@ def experiment_with_data_noise(data: pd.DataFrame, predictor: Model, data_name: 
             for p in range(population):
                 print("Population {}/{}".format(p + 1, population))
                 new_train = train.copy()
-                new_train = apply_noise(new_train, mu, (sigma + (i * noise)) / sigma_normaliser, data_name, seed + p + i)
+                new_train = apply_noise(new_train, mu, (sigma + (i * noise)) / sigma_normaliser, data_name,
+                                        seed + p + i)
                 train_and_cumulate_results(new_train, predictor, ski_name, metrics, loss, results, x_test, y_test, p)
+            results.to_csv(file_name, index=False)
+
+
+def compute_divergence_over_experiments_with_data_noise(data: pd.DataFrame,
+                                                        data_name: str, population: int,
+                                                        mu: float = 0, sigma: float = 0,
+                                                        n_steps: int = N_STEP_NOISE,
+                                                        noise: float = NOISE, test_size: float = TEST_RATIO,
+                                                        seed: int = SEED):
+    print("Computing divergence scores for experiments with data noise: {}".format(data_name))
+    train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
+    sigma_normaliser = 10 if data_name == SpliceJunction.name else 1
+    x_test = test.iloc[:, :-1]
+    y_test = to_categorical(test.iloc[:, -1:])
+    for i in range(n_steps):
+        print("\n\nStep {}/{}\n".format(i + 1, n_steps))
+        _create_missing_directories(NOISE_RESULTS_PATH, data_name, 'divergences')
+        file_name = NOISE_RESULTS_PATH / (data_name + os.sep + 'divergences' + os.sep + "{}.csv".format(i + 1))
+        if os.path.exists(file_name):
+            print("File {} already exists".format(file_name))
+            continue
+        else:
+            results = pd.DataFrame(columns=['divergence'])
+            for p in range(population):
+                print("Population {}/{}".format(p + 1, population))
+                new_train = train.copy()
+                new_train = apply_noise(new_train, mu, (sigma + (i * noise)) / sigma_normaliser, data_name,
+                                        seed + p + i)
+                divergence = compute_divergence(original_data=train,
+                                                perturbed_data=new_train)
+                results = pd.concat([results, pd.DataFrame.from_records([{'divergence': divergence}])])
+                # results = results.append({'divergence': divergence}, ignore_index=True)
+            results.to_csv(file_name, index=False)
+
+
+def compute_divergence_over_experiments_experiment_with_data_drop(data: pd.DataFrame, data_name: str, population: int,
+                                                                  drop_size: float = DROP_RATIO,
+                                                                  n_steps: int = N_STEP_DROP,
+                                                                  test_size: float = TEST_RATIO, seed: int = SEED):
+    print("Experiment with data drop: {}".format(data_name))
+    n_steps += 1  # Because the first step is the original dataset
+    train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
+    x_test = test.iloc[:, :-1]
+    y_test = to_categorical(test.iloc[:, -1:])
+    for i in range(n_steps):
+        print("\n\nStep {}/{}\n".format(i + 1, n_steps))
+        _create_missing_directories(DROP_RESULTS_PATH, data_name, 'divergences')
+        file_name = DROP_RESULTS_PATH / (data_name + os.sep + 'divergences' + os.sep + "{}.csv".format(i + 1))
+        if os.path.exists(file_name):
+            print("File {} already exists".format(file_name))
+            continue
+        else:
+            results = pd.DataFrame(columns=['divergence'])
+            f = drop_size * i
+            for p in range(population):
+                print("Population {}/{}".format(p + 1, population))
+                if f > 0:
+                    new_train, _ = train_test_split(train, test_size=f, random_state=seed + p,
+                                                    stratify=train.iloc[:, -1])
+                else:
+                    new_train = train
+                divergence = compute_divergence(original_data=train,
+                                                perturbed_data=new_train)
+                results = pd.concat([results, pd.DataFrame.from_records([{'divergence': divergence}])])
             results.to_csv(file_name, index=False)

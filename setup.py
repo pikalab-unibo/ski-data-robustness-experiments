@@ -17,7 +17,9 @@ from experiments import generate_neural_network_breast_cancer, generate_neural_n
     generate_neural_network_splice_junction, SEED
 from figures import plot_cm
 from knowledge import PATH as KNOWLEDGE_PATH, compute_confusion_matrix
-from experiments import experiment_with_data_drop, experiment_with_data_noise
+from experiments import experiment_with_data_drop, experiment_with_data_noise, \
+    compute_divergence_over_experiments_with_data_noise, compute_divergence_over_experiments_experiment_with_data_drop
+from statistics import compute_robustness
 
 
 class LoadDatasets(distutils.cmd.Command):
@@ -48,7 +50,8 @@ class LoadDatasets(distutils.cmd.Command):
 class RunExperiments(distutils.cmd.Command):
     description = 'run experiments'
     user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])'),
-                    ('dataset=', 'd', 'dataset to run the experiments on (b[reast cancer], s[plice junction], c[ensus income])'),
+                    ('dataset=', 'd',
+                     'dataset to run the experiments on (b[reast cancer], s[plice junction], c[ensus income])'),
                     ('predictor=', 'p', 'predictors to use (u[neducated], kins, kill, kbann)')]
     metrics = ['accuracy', Precision(), Recall()]
     optimizer = 'adam'
@@ -103,9 +106,11 @@ class RunExperiments(distutils.cmd.Command):
             for name in self.predictor_names:
                 if name == 'uneducated':
                     if self.function == 'drop':
-                        experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                        experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size,
+                                                  self.metrics, loss=loss)
                     else:
-                        experiment_with_data_noise(data, uneducated, dataset.name, name, self.population_size, self.metrics, sigma=1, loss=loss)
+                        experiment_with_data_noise(data, uneducated, dataset.name, name, self.population_size,
+                                                   self.metrics, sigma=1, loss=loss)
                 else:
                     if name == 'kins':
                         feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
@@ -124,9 +129,56 @@ class RunExperiments(distutils.cmd.Command):
                         k.trainable = True
                     predictor = injector.inject(knowledge)
                     if self.function == 'drop':
-                        experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size, self.metrics, loss=loss)
+                        experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size,
+                                                  self.metrics, loss=loss)
                     else:
-                        experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size, self.metrics, sigma=1, loss=loss)
+                        experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size,
+                                                   self.metrics, sigma=1, loss=loss)
+
+
+class RunExperimentsDivergence(RunExperiments):
+
+    def run(self) -> None:
+        get_custom_objects().update(NetBuilder.custom_objects)
+        set_seed(SEED)
+        for dataset in self.datasets:
+            print(f'Running experiments for {dataset.name} dataset')
+            data = pd.read_csv(dataset.file_name, header=0, sep=",", encoding='utf8')
+            if self.function == 'drop':
+                compute_divergence_over_experiments_experiment_with_data_drop(data, dataset.name,
+                                                                              self.population_size)
+            else:
+                compute_divergence_over_experiments_with_data_noise(data, dataset.name,
+                                                                    self.population_size,
+                                                                    sigma=1)
+
+
+class ComputeMetrics(distutils.cmd.Command):
+    description = 'print robustness metric'
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    exp_type = None
+    experiments = None
+    function = 'drop'
+
+    def initialize_options(self) -> None:
+        self.type = None
+
+    def finalize_options(self) -> None:
+        if self.type:
+            if self.type.lower() == 'd':
+                self.function = 'drop'
+            elif self.type.lower() == 'n':
+                self.function = 'noise'
+
+    def run(self) -> None:
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        metrics = ['accuracy']
+        robustness_dict = {dataset.name: {metric: None for metric in metrics} for dataset in datasets}
+        for dataset in datasets:
+            for metric in metrics:
+                robustness = compute_robustness(self.function, dataset, metric)
+                robustness_dict[dataset.name][metric] = robustness
+        print(robustness_dict)
 
 
 class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
@@ -205,7 +257,8 @@ class GeneratePlots(distutils.cmd.Command):
                         for file in files:
                             results.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
                         for metric in metrics:
-                            plot_accuracy_distributions(results, dataset, self.exp_type, 5, self.experiments, predictor, metric)
+                            plot_accuracy_distributions(results, dataset, self.exp_type, 5, self.experiments, predictor,
+                                                        metric)
 
 
 class GenerateComparisonPlots(distutils.cmd.Command):
@@ -317,7 +370,8 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
                 for file in complete_files:
                     tmp.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
                 experiments.append(tmp)
-            plot_average_accuracy_curves(experiments, dataset, self.exp_type, 5, self.experiments, educated_predictors, metric)
+            plot_average_accuracy_curves(experiments, dataset, self.exp_type, 5, self.experiments, educated_predictors,
+                                         metric)
 
 
 setup(
@@ -352,6 +406,8 @@ setup(
     cmdclass={
         'load_datasets': LoadDatasets,
         'run_experiments': RunExperiments,
+        'run_divergence': RunExperimentsDivergence,
+        'print_robustness': ComputeMetrics,
         'generate_plots': GeneratePlots,
         'generate_comparison_plots': GenerateComparisonPlots,
         'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,

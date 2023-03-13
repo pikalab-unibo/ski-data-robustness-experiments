@@ -144,7 +144,7 @@ def load_census_income_dataset(binary_features: bool = False, numeric_output: bo
         # CapitalGain, CapitalLoss and Sex are binarized
         data['CapitalGain'] = data['CapitalGain'].apply(lambda x: 0 if x == 0 else 1)
         data['CapitalLoss'] = data['CapitalLoss'].apply(lambda x: 0 if x == 0 else 1)
-        data['Sex'] = data['Sex'].apply(lambda x: 0 if x == ' Male' else 1)
+        data['Sex'] = data['Sex'].apply(lambda x: 0 if x in ['Male', ' Male', 'Male ', ' Male ', ' Male.'] else 1)
         one_hot = pd.get_dummies(df[CensusIncome.one_hot_features].apply(lambda x: x.str.upper()),
                                  columns=CensusIncome.one_hot_features)
         callback: Callable = lambda pat: pat.group(1) + "_" + pat.group(2).lower()
