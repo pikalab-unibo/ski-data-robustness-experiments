@@ -218,7 +218,7 @@ def _compute_kl_div(data1: pd.DataFrame, data2: pd.DataFrame) -> float:
 
 
 def compute_robustness(perturbation: str, dataset: BreastCancer or SpliceJunction or CensusIncome, metric: str) -> dict:
-    models = ['kbann', 'kill', 'kins', 'uneducated']
+    models = ['uneducated', 'kins', 'kill', 'kbann']
     robustness_dict = {}
     n = 10 if perturbation == 'noise' else 20
 
@@ -233,9 +233,8 @@ def compute_robustness(perturbation: str, dataset: BreastCancer or SpliceJunctio
         for i in range(n) if perturbation == 'noise' else range(1, n):
             divergences.append(np.mean(pd.read_csv(RESULT_PATH / perturbation / dataset.name / 'divergences' / f'{i + 1}.csv'))[0])
             pi2.append(np.mean(pd.read_csv(RESULT_PATH / perturbation / dataset.name / model / f'{i + 1}.csv')[metric]))
-        robustness_dict[model] = (sum(np.asarray(divergences) / (pi1 / pi2)) / n)
-    for model in ['kbann', 'kill', 'kins']:
-        robustness_dict[model] /= robustness_dict['uneducated']
-    # del robustness_dict['uneducated']
+        robustness_dict[model + ' absolute'] = (sum(np.asarray(divergences) / (pi1 / pi2)) / n)
+    for model in models:
+        robustness_dict[model + ' relative'] = robustness_dict[model + ' absolute'] / robustness_dict['uneducated absolute']
 
     return robustness_dict
