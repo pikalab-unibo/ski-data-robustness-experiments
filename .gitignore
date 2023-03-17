@@ -5,6 +5,7 @@ figures/*/*/*/*.svg
 figures/*/*/*.png
 figures/*/*/*.pdf
 figures/*/*/*.svg
+.DS_Store
 
 # JetBrains related
 .idea/
