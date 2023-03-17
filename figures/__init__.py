@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib as mpl
+import matplotlib.font_manager as font_manager
 from data import BreastCancer, SpliceJunction, CensusIncome
 from experiments import TEST_RATIO
 from mlxtend.plotting import plot_confusion_matrix
@@ -56,7 +57,8 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
     _create_missing_directories(PATH, exp_type, dataset)
     if not os.path.exists(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name)):
         os.makedirs(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name))
-    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name + os.sep + metric + '-distributions.svg'))
+    plt.savefig(
+        PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name + os.sep + metric + '-distributions.svg'))
 
 
 def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.DataFrame],
@@ -107,7 +109,8 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
                     whiskerprops=dict(color=main_color2),
                     flierprops=dict(color=main_color2, markeredgecolor=main_color2),
                     medianprops=dict(color=main_color2), )
-    plt.title(dataset.name.capitalize().replace('-', ' ') + ' ' + predictor_name1 + ' vs ' + predictor_name2 + ' ' + metric + ' distributions')
+    plt.title(dataset.name.capitalize().replace('-',
+                                                ' ') + ' ' + predictor_name1 + ' vs ' + predictor_name2 + ' ' + metric + ' distributions')
     plt.ylabel(metric.capitalize() + ' on test set')
     if exp_type == 'drop':
         plt.xlabel('Cardinality of the training set')
@@ -123,11 +126,14 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
             ax.set_xticks(np.arange(1.25, steps + 1.25, 1), [f'{i}' for i in range(0, steps)])
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
-    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.svg'))
+    plt.savefig(PATH / (
+            exp_type + os.sep + dataset.name + os.sep + predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.svg'))
 
 
-def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]], dataset: BreastCancer or SpliceJunction or CensusIncome,
-                                 exp_type: str, drop_percentage: int, steps: int, predictor_names: list[str], metric: str):
+def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
+                                 dataset: BreastCancer or SpliceJunction or CensusIncome,
+                                 exp_type: str, drop_percentage: int, steps: int, predictor_names: list[str],
+                                 metric: str):
     """
     Generate the average accuracy curves.
     :param experiments: A list of lists of dataframes containing the results of the experiments.
@@ -139,6 +145,24 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]], dataset:
     :param metric: The metric used to evaluate the predictor.
     """
 
+    lines = {'uneducated': 'solid',
+             'kbann': (0, (3, 5, 1, 5, 1, 5)),
+             'kill': (0, (3, 5, 1, 5)),
+             'kins': (0, (5, 10))}
+    markers = {'uneducated': 'o',
+               'kbann': 'v',
+               'kill': '^',
+               'kins': 's'}
+    colors = {'uneducated': 'red',
+              'kbann': 'blue',
+              'kill': 'green',
+              'kins': 'black'}
+    fontsizes = {'title': 19,
+                 'legend': 22,
+                 'axis': 25,
+                 'ticks': 20, }
+    legend_font = font_manager.FontProperties(style='normal', size=fontsizes['legend'])
+
     data_size = dataset.size * (1 - TEST_RATIO)
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(111)
@@ -147,30 +171,50 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]], dataset:
         if metric == 'f1':
             precisions = [distribution['precision'] for distribution in experiments[i]]
             recalls = [distribution['recall'] for distribution in experiments[i]]
-            curve = [np.mean((2*p*r)/(p+r)) for p, r in zip(precisions, recalls)]
+            curve = [np.mean((2 * p * r) / (p + r)) for p, r in zip(precisions, recalls)]
         else:
             curve = [np.mean(distribution[metric]) for distribution in experiments[i]]  # means of the distributions
         # std_devs = [np.std(distribution[metric]) for distribution in experiments[i]]  # std devs of the distributions
-        ax.plot(np.arange(1, steps + 1, 1), curve, label=predictor_names[i], linewidth=2)
+        ax.plot(np.arange(1, steps + 1, 1), curve,
+                # linestyle=lines[predictor_names[i]],
+                marker=markers[predictor_names[i]],
+                markersize=10,
+                color=colors[predictor_names[i]],
+                label=predictor_names[i].upper(),
+                linewidth=3)
         # ax.fill_between(np.arange(1, steps + 1, 1), np.array(curve) - np.array(std_devs),
         #                 np.array(curve) + np.array(std_devs), alpha=0.2)
-    plt.title(dataset.name.capitalize().replace('-', ' ') + ' ' + metric + ' average curves')
-    plt.ylabel(metric.capitalize() + ' on test set')
+    # plt.title(dataset.name.capitalize().replace('-', ' ') + ' ' + metric + ' average curves',
+    #           fontsize=fontsizes['title'])
+    plt.ylabel(metric.capitalize() + ' on test set',
+               fontsize=fontsizes['axis'])
     if exp_type == 'drop':
-        plt.xlabel('Cardinality of the training set')
+        plt.xlabel('Cardinality of the training set',
+                   fontsize=fontsizes['axis'])
         drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
         drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
-        labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
-        ax.set_xticks(np.arange(1, steps + 1, 1), labels)
+        # labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
+        labels = [y + " " + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels,
+                      fontsize=fontsizes['ticks'], rotation=45)
+        plt.legend(loc='lower left', prop=legend_font)
     elif exp_type == 'noise':
-        plt.xlabel('Noise level (sigma)')
+        plt.xlabel(r'Noise level ($\sigma$)',
+                   fontsize=fontsizes['axis'])
         if dataset.name == SpliceJunction.name:
-            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)])
+            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)],
+                          fontsize=fontsizes['ticks'])
         else:
-            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)])
-    plt.legend(loc='upper right')
+            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)],
+                          fontsize=fontsizes['ticks'])
+        plt.legend(loc='upper right', prop=legend_font)
+    plt.yticks(fontsize=fontsizes['ticks'])
+    plt.tight_layout()
     _create_missing_directories(PATH, exp_type, dataset)
-    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(predictor_names) + '-' + metric + '-average-curves.svg'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(
+        predictor_names) + '-' + metric + '-average-curves.svg'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(
+        predictor_names) + '-' + metric + '-average-curves.pdf'))
 
 
 def plot_cm(data: np.ndarray, class_names: list[str], dataset_name: str):
