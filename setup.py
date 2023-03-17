@@ -171,14 +171,15 @@ class ComputeMetrics(distutils.cmd.Command):
                 self.function = 'noise'
 
     def run(self) -> None:
+        from results import PATH as RESULT_PATH
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metrics = ['accuracy']
-        robustness_dict = {dataset.name: {metric: None for metric in metrics} for dataset in datasets}
+        robustness = {}
         for dataset in datasets:
             for metric in metrics:
                 robustness = compute_robustness(self.function, dataset, metric)
-                robustness_dict[dataset.name][metric] = robustness
-        print(robustness_dict)
+            result = pd.DataFrame([robustness])
+            result.to_csv(RESULT_PATH / self.function / dataset.name / 'robustness.csv', index=False)
 
 
 class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
@@ -407,7 +408,7 @@ setup(
         'load_datasets': LoadDatasets,
         'run_experiments': RunExperiments,
         'run_divergence': RunExperimentsDivergence,
-        'print_robustness': ComputeMetrics,
+        'compute_robustness': ComputeMetrics,
         'generate_plots': GeneratePlots,
         'generate_comparison_plots': GenerateComparisonPlots,
         'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,

@@ -8,7 +8,7 @@ By default, the command will store the original dataset into ```datasets``` fold
 
 Datasets are not tracked by git, so you first need to execute this command before doing anything else.
 
-### [Wisconsin breast cancer dataset](https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+%28original%29) (breast cancer)
+### [Wisconsin breast cancer dataset](https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+%28original%29) (BCW)
 It represents clinical data of patients.
 It consists of 9 categorical ordinal features:
 1. Clump Thickness
@@ -24,7 +24,7 @@ It consists of 9 categorical ordinal features:
 All features have integer values in [1, 10] range.
 Class indicates if the cancer is benign or malignant.
 
-### [Primate splice junction gene sequences dataset](https://archive.ics.uci.edu/ml/datasets/Molecular+Biology+(Splice-junction+Gene+Sequences)) (splice junction)
+### [Primate splice junction gene sequences dataset](https://archive.ics.uci.edu/ml/datasets/Molecular+Biology+(Splice-junction+Gene+Sequences)) (PSJGS)
 It represents DNA sequences.
 Each sequence consists of 60 bases.
 Values of one base can be `a`, `c`, `g`, `t` (adenine, cytosine, guanine, thymine).
@@ -34,7 +34,7 @@ Both dataset and knowledge have special symbols in addition to the 4 bases.
 These symbols indicate that for a particular position in the sequence more than one value of the 4 basis is allowed.
 For this reason, the dataset is binarized (one-hot encoding) in order to represent dna sequences with just the 4 basis.
 
-### [Census income dataset](https://archive.ics.uci.edu/ml/datasets/census+income) (census income)
+### [Census income dataset](https://archive.ics.uci.edu/ml/datasets/census+income) (CI)
 
 It represents general person's data and the yearly income (less or above 50,000 USD).
 Features are continuous, (nominal and ordinal) categorical and binary.
@@ -53,3 +53,23 @@ Features are continuous, (nominal and ordinal) categorical and binary.
 12. capital-loss, continuous
 13. hours-per-week, continuous
 14. native-country, nominal categorical
+
+## 2. Run experiments
+Execute the command ```python -m setup.py run_experiments -t [d, n] -d [b, s, c] -p [u, kins, kill, kbann]``` to run experiments.
+The -t flag indicates the type of experiments to run: `d` for data drop degradation experiments, `n` for noise experiments.
+The -d flag indicates the dataset to use: `b` for breast cancer, `s` for splice junction, `c` for census income.
+The -p flag indicates the type of predictor to use: `u` for the uneducated, `kins` for the [KINS](http://ceur-ws.org/Vol-3204/paper_25.pdf) SKI method, `kill` for [KILL](http://ceur-ws.org/Vol-3261/paper5.pdf) SKI method, `kbann` for [KBANN](http://www.aaai.org/Library/AAAI/1990/aaai90-129.php) SKI method.
+
+Some executions are faster than others, for instance in the case of the BCW dataset, instead other experiments are much longer like in the case of CI dataset.
+
+Results are stored in the `results` folder.
+
+## 3. KL divergence
+To compute the intensity of the data degradation we rely on a formula that requires the computation of the KL divergence between the original and the degraded dataset.
+To execute this computation, run the command ```python -m setup.py run_divergence```.
+Results are stored in the `results` folder in the corresponding subfolder (e.g. `results/drop/breast-cancer/divergences/1.csv`).
+
+## 4. Robustness
+To compute the robustness of the SKI methods, run the command ```python -m setup.py compute_robustness -t [d, n]```.
+The -t flag indicates the type of experiments to run: `d` for data drop degradation experiments, `n` for noise experiments.
+Results are stored in the `results` folder in the corresponding subfolder (e.g. `results/drop/breast-cancer/robustness.csv`).
