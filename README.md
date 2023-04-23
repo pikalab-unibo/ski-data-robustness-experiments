@@ -8,6 +8,12 @@ By default, the command will store the original dataset into ```datasets``` fold
 
 Datasets are not tracked by git, so you first need to execute this command before doing anything else.
 
+**UPDATE!** (23/04/2023)
+
+Recently, the UCI website updated one of the dataset that we are using in the experiments.
+Therefore, to preserve reproducibility, we have added the preprocessed dataset to the repository.
+Conversely, there is no need to execute the command ```python -m setup.py load_datasets``` anymore.
+
 ### [Wisconsin breast cancer dataset](https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+%28original%29) (BCW)
 It represents clinical data of patients.
 It consists of 9 categorical ordinal features:
