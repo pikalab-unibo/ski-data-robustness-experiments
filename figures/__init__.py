@@ -14,11 +14,15 @@ mpl.use('TkAgg')  # !IMPORTANT
 PATH = Path(__file__).parents[0]
 
 
-def _create_missing_directories(path: Path, exp_type: str, dataset: BreastCancer or SpliceJunction or CensusIncome):
+def _create_missing_directories(path: Path, exp_type: str, dataset: BreastCancer or SpliceJunction or CensusIncome or str):
     if not os.path.exists(path / exp_type):
         os.makedirs(path / exp_type)
-    if not os.path.exists(path / (exp_type + os.sep + dataset.name)):
-        os.makedirs(path / (exp_type + os.sep + dataset.name))
+    if isinstance(dataset, str):
+        if not os.path.exists(path / (exp_type + os.sep + dataset)):
+            os.makedirs(path / (exp_type + os.sep + dataset))
+    else:
+        if not os.path.exists(path / (exp_type + os.sep + dataset.name)):
+            os.makedirs(path / (exp_type + os.sep + dataset.name))
 
 
 def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCancer or SpliceJunction or CensusIncome,
@@ -215,6 +219,79 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
         predictor_names) + '-' + metric + '-average-curves.svg'))
     plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(
         predictor_names) + '-' + metric + '-average-curves.pdf'))
+
+
+def plot_divergences_distributions(experiments: dict[list[pd.DataFrame]],
+                                   exp_type: str, drop_percentage: int, steps: int, ):
+    """
+    Generate the average accuracy curves.
+    :param experiments: A dictionary of lists of dataframes containing the results of the experiments.
+    :param exp_type: The type of the experiment.
+    :param drop_percentage: The percentage of the dataset to drop.
+    :param steps: The number of steps.
+    """
+
+    lines = {'breast-cancer': (0, (3, 5, 1, 5, 1, 5)),
+             'splice-junction': (0, (3, 5, 1, 5)),
+             'census-income': (0, (5, 10))}
+    markers = {'breast-cancer': 'v',
+               'splice-junction': '^',
+               'census-income': 's'}
+    colors = {'breast-cancer': 'blue',
+              'splice-junction': 'green',
+              'census-income': 'black'}
+    fontsizes = {'title': 19,
+                 'legend': 22,
+                 'axis': 25,
+                 'ticks': 20, }
+    legend_font = font_manager.FontProperties(style='normal', size=fontsizes['legend'])
+
+    datasets = list(experiments.keys())
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(111)
+    for dataset in datasets:
+        dataset_divergences = experiments[dataset]
+        dataset_name = dataset.name
+        data_size = dataset.size * (1 - TEST_RATIO)
+        curve = []
+        stds = []
+        for i in range(len(dataset_divergences)):
+            curve.append(np.mean(dataset_divergences[i]['divergence']))  # means of the distributions
+        curve[0] += 1e-15
+        ax.plot(np.arange(1, steps + 1, 1),
+                curve,
+                # linestyle=lines[dataset.name],
+                marker=markers[dataset.name],
+                markersize=10,
+                color=colors[dataset.name],
+                label=dataset.name.upper(),
+                linewidth=3)
+        plt.ylabel('KL divergence', fontsize=fontsizes['axis'])
+        if exp_type == 'drop':
+            plt.xlabel('Cardinality of the training set',
+                       fontsize=fontsizes['axis'])
+            drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
+            drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
+            labels = [y + " " + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
+            ax.set_xticks(np.arange(1, steps + 1, 1), labels,
+                          fontsize=fontsizes['ticks'], rotation=45)
+            ax.set_yscale('log')
+            plt.legend(loc='lower right', prop=legend_font)
+        elif exp_type == 'noise':
+            plt.xlabel(r'Noise level ($\sigma$)',
+                       fontsize=fontsizes['axis'])
+            if dataset.name == SpliceJunction.name:
+                ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)],
+                              fontsize=fontsizes['ticks'])
+            else:
+                ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)],
+                              fontsize=fontsizes['ticks'])
+            plt.legend(loc='lower right', prop=legend_font)
+    plt.yticks(fontsize=fontsizes['ticks'])
+    plt.tight_layout()
+    _create_missing_directories(PATH, exp_type, 'divergences')
+    plt.savefig(PATH / (exp_type + os.sep + 'divergences' + os.sep + 'KL-' + exp_type + '-average-curves.svg'))
+    plt.savefig(PATH / (exp_type + os.sep + 'divergences' + os.sep + 'KL-' + exp_type + '-average-curves.pdf'))
 
 
 def plot_cm(data: np.ndarray, class_names: list[str], dataset_name: str):

@@ -215,6 +215,49 @@ class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
             plot_cm(cm, list(dataset.class_mapping_short.keys()), dataset.name)
 
 
+class GenerateDivergencesPlots(distutils.cmd.Command):
+    description = 'generate divergences plots'
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    exp_type = None
+    experiments = None
+
+    def initialize_options(self) -> None:
+        self.type = None
+
+    def finalize_options(self) -> None:
+        if self.type:
+            if self.type.lower() == 'd':
+                self.exp_type = 'drop'
+                self.experiments = 20
+            elif self.type.lower() == 'n':
+                self.exp_type = 'noise'
+                self.experiments = 11
+
+    def run(self) -> None:
+        from figures import plot_divergences_distributions
+        from results.drop import PATH as DROP_RESULT_PATH
+        from results.noise import PATH as NOISE_RESULT_PATH
+
+        path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
+        print(f'Generating plots for all datasets')
+        results = {}
+        for dataset in datasets:
+            results[dataset] = []
+            directory = path / dataset.name / 'divergences'
+            if os.path.exists(directory):
+                files = [file for file in os.listdir(directory) if '.csv' in file]
+                files = sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()])))
+                files = [directory / f for f in files if f.endswith('.csv')][:self.experiments]
+                if len(files) > 0:
+                    first_drop = DROP_RESULT_PATH / dataset.name / 'divergences' / '1.csv'
+                    if first_drop not in files:
+                        files.insert(0, first_drop)
+                    for file in files:
+                        results[dataset].append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
+        plot_divergences_distributions(results, self.exp_type, 5, self.experiments)
+
+
 class GeneratePlots(distutils.cmd.Command):
     description = 'generate plots'
     user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
@@ -413,5 +456,6 @@ setup(
         'generate_comparison_plots': GenerateComparisonPlots,
         'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,
         'generate_knowledge_confusion_matrix': GenerateKnowledgeConfusionMatrix,
+        'generate_divergences_plots': GenerateDivergencesPlots,
     },
 )
