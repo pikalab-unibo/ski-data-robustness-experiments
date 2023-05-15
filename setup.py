@@ -275,7 +275,7 @@ class GenerateDivergencesPlots(distutils.cmd.Command):
                 self.experiments = 20
             elif self.type.lower() == 'l':
                 self.exp_type = 'label_flip'
-                self.experiments = 20
+                self.experiments = 21
 
     def run(self) -> None:
         from figures import plot_divergences_distributions
@@ -332,10 +332,10 @@ class GeneratePlots(distutils.cmd.Command):
                 self.experiments = 11
             elif self.type.lower() == 'm':
                 self.exp_type = 'mix'
-                self.experiments = 11
+                self.experiments = 20
             elif self.type.lower() == 'l':
                 self.exp_type = 'label_flip'
-                self.experiments = 20
+                self.experiments = 21
 
     def run(self) -> None:
         from figures import plot_accuracy_distributions
@@ -368,7 +368,7 @@ class GeneratePlots(distutils.cmd.Command):
                     files = [directory / f for f in files if f.endswith('.csv')]
                     if len(files) > 0:
                         first_drop = DROP_RESULT_PATH / dataset.name / predictor / '1.csv'
-                        if first_drop not in files:
+                        if self.exp_type == 'noise' and first_drop not in files:
                             files.insert(0, first_drop)
                         for file in files:
                             results.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
@@ -469,10 +469,10 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
                 self.experiments = 11
             elif self.type.lower() == 'm':
                 self.exp_type = 'mix'
-                self.experiments = 11
+                self.experiments = 20
             elif self.type.lower() == 'l':
                 self.exp_type = 'label_flip'
-                self.experiments = 20
+                self.experiments = 21
 
     def run(self) -> None:
         from figures import plot_average_accuracy_curves
@@ -501,7 +501,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
             files1 = sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()])))
             files1 = [directory1 / f for f in files1 if f.endswith('.csv')]
             first_drop = DROP_RESULT_PATH / dataset.name / 'uneducated' / '1.csv'
-            if first_drop not in files1:
+            if self.exp_type == 'noise' and first_drop not in files1:
                 files1.insert(0, first_drop)
             paths = [path / dataset.name / educated for educated in educated_predictors]
             paths = [p for p in paths if os.path.exists(path)]
@@ -516,7 +516,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
                 files = sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()])))
                 complete_files = [p / file for file in files if file.endswith('.csv')]
                 first_drop = DROP_RESULT_PATH / Path(*p.parts[-2:]) / '1.csv'
-                if first_drop not in complete_files:
+                if self.exp_type == 'noise' and first_drop not in complete_files:
                     complete_files.insert(0, first_drop)
                 for file in complete_files:
                     tmp.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))

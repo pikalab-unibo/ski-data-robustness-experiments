@@ -73,7 +73,7 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=90)
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $P_f$')
-        labels = [r'$P_f$ = {}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     _create_missing_directories(PATH, exp_type, dataset)
     if not os.path.exists(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name)):
@@ -159,7 +159,7 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=90)
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $P_f$')
-        labels = [r'$P_f$ = {}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
@@ -263,10 +263,10 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
         plt.legend(loc='lower right', prop=legend_font)
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $P_f$', fontsize=fontsizes['axis'])
-        labels = [r'$P_f$ = {}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels,
                       fontsize=fontsizes['ticks'], rotation=80)
-        plt.legend(loc='upper left', prop=legend_font)
+        plt.legend(loc='lower left', prop=legend_font)
     plt.yticks(fontsize=fontsizes['ticks'])
     plt.tight_layout()
     _create_missing_directories(PATH, exp_type, dataset)
@@ -367,7 +367,7 @@ def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, Sp
             plt.legend(loc='lower right', prop=legend_font)
         elif exp_type == 'label_flip':
             plt.xlabel(r'Flipping probability $P_f$', fontsize=fontsizes['axis'])
-            labels = [r'$P_f$ = {}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+            labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
             ax.set_xticks(np.arange(1, steps + 1, 1), labels,
                           fontsize=fontsizes['ticks'], rotation=80)
             plt.legend(loc='upper left', prop=legend_font)
