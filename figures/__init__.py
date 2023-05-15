@@ -59,6 +59,22 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
             ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)])
         else:
             ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)])
+    elif exp_type == 'mix':
+        plt.xlabel(r'Cardinality of the training set ($\left\|\cdot\right\|$) and noise level ($\sigma$)')
+        drop_percentage_labels = [r'$\left\|\cdot\right\|$ = ' \
+                                  r'{}%'.format(100 - i) for i in range(0,
+                                                                        drop_percentage * steps,
+                                                                        drop_percentage)]
+        if dataset.name == SpliceJunction.name:
+            noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
+        else:
+            noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
+        labels = [y + " & " + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=90)
+    elif exp_type == 'label_flip':
+        plt.xlabel(r'Flipping probability $P_f$')
+        labels = [r'$P_f$ = {}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     _create_missing_directories(PATH, exp_type, dataset)
     if not os.path.exists(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name)):
         os.makedirs(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name))
@@ -124,11 +140,27 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
         labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
         ax.set_xticks(np.arange(1.25, steps + 1.25, 1), labels)
     elif exp_type == 'noise':
-        plt.xlabel('Noise level (sigma)')
+        plt.xlabel(r'Noise level ($\sigma$)')
         if dataset.name == SpliceJunction.name:
             ax.set_xticks(np.arange(1.25, steps + 1.25, 1), [f'{i / 10}' for i in range(0, steps)])
         else:
             ax.set_xticks(np.arange(1.25, steps + 1.25, 1), [f'{i}' for i in range(0, steps)])
+    elif exp_type == 'mix':
+        plt.xlabel(r'Cardinality of the training set ($\left\|\cdot\right\|$) and noise level ($\sigma$)')
+        drop_percentage_labels = [r'$\left\|\cdot\right\|$ = ' \
+                                  r'{}%'.format(100 - i) for i in range(0,
+                                                                        drop_percentage * steps,
+                                                                        drop_percentage)]
+        if dataset.name == SpliceJunction.name:
+            noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
+        else:
+            noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
+        labels = [y + " & " + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=90)
+    elif exp_type == 'label_flip':
+        plt.xlabel(r'Flipping probability $P_f$')
+        labels = [r'$P_f$ = {}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
     plt.savefig(PATH / (
@@ -213,6 +245,28 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
             ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)],
                           fontsize=fontsizes['ticks'])
         plt.legend(loc='upper right', prop=legend_font)
+    elif exp_type == 'mix':
+        plt.xlabel(r'Cardinality of the training set ($\left\|\cdot\right\|$) and noise level ($\sigma$)',
+                   fontsize=fontsizes['axis'])
+        drop_percentage_labels = [r'$\left\|\cdot\right\|$ = ' \
+                                  r'{}%'.format(100 - i) for i in range(0,
+                                                                        drop_percentage * steps,
+                                                                        drop_percentage)]
+        if dataset.name == SpliceJunction.name:
+            noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
+        else:
+            noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
+        labels = [y + " & " + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels,
+                      fontsize=fontsizes['ticks'], rotation=90)
+        ax.set_yscale('log')
+        plt.legend(loc='lower right', prop=legend_font)
+    elif exp_type == 'label_flip':
+        plt.xlabel(r'Flipping probability $P_f$', fontsize=fontsizes['axis'])
+        labels = [r'$P_f$ = {}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels,
+                      fontsize=fontsizes['ticks'], rotation=80)
+        plt.legend(loc='upper left', prop=legend_font)
     plt.yticks(fontsize=fontsizes['ticks'])
     plt.tight_layout()
     _create_missing_directories(PATH, exp_type, dataset)
