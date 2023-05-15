@@ -1,3 +1,4 @@
+from typing import Type, Union
 import os
 from pathlib import Path
 import numpy as np
@@ -221,7 +222,7 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
         predictor_names) + '-' + metric + '-average-curves.pdf'))
 
 
-def plot_divergences_distributions(experiments: dict[list[pd.DataFrame]],
+def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, SpliceJunction, CensusIncome]], list],
                                    exp_type: str, drop_percentage: int, steps: int, ):
     """
     Generate the average accuracy curves.
@@ -287,6 +288,28 @@ def plot_divergences_distributions(experiments: dict[list[pd.DataFrame]],
                 ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)],
                               fontsize=fontsizes['ticks'])
             plt.legend(loc='lower right', prop=legend_font)
+        elif exp_type == 'mix':
+            plt.xlabel(r'Cardinality of the training set ($\left\|\cdot\right\|$) and noise level ($\sigma$)',
+                       fontsize=fontsizes['axis'])
+            drop_percentage_labels = [r'$\left\|\cdot\right\|$ = ' \
+                                      r'{}%'.format(100 - i) for i in range(0,
+                                                                            drop_percentage * steps,
+                                                                            drop_percentage)]
+            if dataset.name == SpliceJunction.name:
+                noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
+            else:
+                noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
+            labels = [y + " & " + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
+            ax.set_xticks(np.arange(1, steps + 1, 1), labels,
+                          fontsize=fontsizes['ticks'], rotation=90)
+            ax.set_yscale('log')
+            plt.legend(loc='lower right', prop=legend_font)
+        elif exp_type == 'label_flip':
+            plt.xlabel(r'Flipping probability $P_f$', fontsize=fontsizes['axis'])
+            labels = [r'$P_f$ = {}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+            ax.set_xticks(np.arange(1, steps + 1, 1), labels,
+                          fontsize=fontsizes['ticks'], rotation=80)
+            plt.legend(loc='upper left', prop=legend_font)
     plt.yticks(fontsize=fontsizes['ticks'])
     plt.tight_layout()
     _create_missing_directories(PATH, exp_type, 'divergences')

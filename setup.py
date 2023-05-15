@@ -305,8 +305,8 @@ class GenerateDivergencesPlots(distutils.cmd.Command):
                 files = sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()])))
                 files = [directory / f for f in files if f.endswith('.csv')][:self.experiments]
                 if len(files) > 0:
-                    first_drop = DROP_RESULT_PATH / dataset.name / 'divergences' / '1.csv'
-                    if first_drop not in files:
+                    if self.exp_type == 'noise':
+                        first_drop = DROP_RESULT_PATH / dataset.name / 'divergences' / '1.csv'
                         files.insert(0, first_drop)
                     for file in files:
                         results[dataset].append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
