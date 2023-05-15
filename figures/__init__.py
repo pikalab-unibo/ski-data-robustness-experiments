@@ -250,6 +250,13 @@ def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, Sp
     datasets = list(experiments.keys())
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(111)
+
+    def reject_outliers(data, m=2.):
+        d = np.abs(data - np.median(data))
+        mdev = np.median(d)
+        s = d / mdev if mdev else np.zeros(len(d))
+        return data[s < m]
+
     for dataset in datasets:
         dataset_divergences = experiments[dataset]
         dataset_name = dataset.name
@@ -257,7 +264,7 @@ def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, Sp
         curve = []
         stds = []
         for i in range(len(dataset_divergences)):
-            curve.append(np.mean(dataset_divergences[i]['divergence']))  # means of the distributions
+            curve.append(np.mean(reject_outliers(dataset_divergences[i]['divergence'])))  # means of the distributions
         curve[0] += 1e-15
         ax.plot(np.arange(1, steps + 1, 1),
                 curve,
