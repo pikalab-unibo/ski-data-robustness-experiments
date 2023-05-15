@@ -9,12 +9,14 @@ from tensorflow.python.keras.utils.np_utils import to_categorical
 from data import BreastCancer, SpliceJunction, CensusIncome
 from results.drop import PATH as DROP_RESULTS_PATH
 from results.noise import PATH as NOISE_RESULTS_PATH
+from results.drop_and_noise import PATH as DROP_AND_NOISE_RESULTS_PATH
 from statistics import apply_noise, compute_divergence
 
 TEST_RATIO = 1 / 3
 DROP_RATIO = 0.05  # 5% of the data is dropped
 N_STEP_DROP = 19  # from 0 to N_STEPS, 0 means no noise, N_STEPS means maximum noise = DROP_RATIO * N_STEPS = 95%
 N_STEP_NOISE = 10
+N_STEP_DROP_NOISE = 20
 NOISE = 1
 EPOCHS = 100
 BATCH_SIZE = 32
@@ -143,6 +145,51 @@ def experiment_with_data_noise(data: pd.DataFrame, predictor: Model, data_name: 
             results.to_csv(file_name, index=False)
 
 
+def experiment_with_data_drop_and_noise(data: pd.DataFrame,
+                                        predictor: Model,
+                                        data_name: str,
+                                        ski_name: str,
+                                        population: int,
+                                        metrics: list,
+                                        drop_size: float = DROP_RATIO,
+                                        mu: float = 0,
+                                        sigma: float = 0,
+                                        noise: float = NOISE/2,
+                                        n_steps: int = N_STEP_DROP_NOISE,
+                                        test_size: float = TEST_RATIO,
+                                        seed: int = SEED,
+                                        loss: str = 'categorical_crossentropy'):
+    print("Experiment with data drop and data noise: {} - {}".format(data_name, ski_name))
+    train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
+    sigma_normaliser = 10 if data_name == SpliceJunction.name else 1
+    x_test = test.iloc[:, :-1]
+    y_test = to_categorical(test.iloc[:, -1:])
+    if ski_name == 'kbann':
+        set_seed(seed)
+        predictor = clone_model(predictor)
+    for i in range(n_steps):
+        sigma_step = (sigma + (i * noise)) / sigma_normaliser
+        drop_step = drop_size * i
+        print("\n\nStep {}/{} -> DROP = {:.3f} & NOISE = {:.2f}\n".format(i + 1, n_steps, drop_step, sigma_step))
+        _create_missing_directories(DROP_AND_NOISE_RESULTS_PATH, data_name, ski_name)
+        file_name = DROP_AND_NOISE_RESULTS_PATH / (data_name + os.sep + ski_name + os.sep + "{}.csv".format(i + 1))
+        if os.path.exists(file_name):
+            print("File {} already exists".format(file_name))
+            continue
+        else:
+            results = pd.DataFrame(columns=['accuracy', 'precision', 'recall'])
+            for p in range(population):
+                print("Population {}/{}".format(p + 1, population))
+                if drop_step > 0:
+                    new_train, _ = train_test_split(train, test_size=drop_step, random_state=seed + p,
+                                                    stratify=train.iloc[:, -1])
+                else:
+                    new_train = train.copy()
+                new_train = apply_noise(new_train, mu, sigma_step, data_name, seed + p + i)
+                train_and_cumulate_results(new_train, predictor, ski_name, metrics, loss, results, x_test, y_test, p)
+            results.to_csv(file_name, index=False)
+
+
 def compute_divergence_over_experiments_with_data_noise(data: pd.DataFrame,
                                                         data_name: str, population: int,
                                                         mu: float = 0, sigma: float = 0,
@@ -201,6 +248,46 @@ def compute_divergence_over_experiments_experiment_with_data_drop(data: pd.DataF
                                                     stratify=train.iloc[:, -1])
                 else:
                     new_train = train
+                divergence = compute_divergence(original_data=train,
+                                                perturbed_data=new_train)
+                results = pd.concat([results, pd.DataFrame.from_records([{'divergence': divergence}])])
+            results.to_csv(file_name, index=False)
+
+
+def compute_divergence_over_experiments_experiment_with_data_drop_and_noise(data: pd.DataFrame, data_name: str,
+                                                                            population: int,
+                                                                            drop_size: float = DROP_RATIO,
+                                                                            mu: float = 0,
+                                                                            sigma: float = 0,
+                                                                            noise: float = NOISE/2,
+                                                                            n_steps: int = N_STEP_DROP_NOISE,
+                                                                            test_size: float = TEST_RATIO,
+                                                                            seed: int = SEED):
+    print("Experiment with data drop: {}".format(data_name))
+    train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
+    sigma_normaliser = 10 if data_name == SpliceJunction.name else 1
+    x_test = test.iloc[:, :-1]
+    y_test = to_categorical(test.iloc[:, -1:])
+    for i in range(n_steps):
+        sigma_step = (sigma + (i * noise)) / sigma_normaliser
+        drop_step = drop_size * i
+        print("\n\nStep {}/{} -> DROP = {:.3f} & NOISE = {:.2f}\n".format(i + 1, n_steps, drop_step, sigma_step))
+        _create_missing_directories(DROP_AND_NOISE_RESULTS_PATH, data_name, 'divergences')
+        file_name = DROP_AND_NOISE_RESULTS_PATH / (data_name + os.sep + 'divergences' + os.sep + "{}.csv".format(i + 1))
+        if os.path.exists(file_name):
+            print("File {} already exists".format(file_name))
+            continue
+        else:
+            results = pd.DataFrame(columns=['divergence'])
+            for p in range(population):
+                print("Population {}/{}".format(p + 1, population))
+                if drop_step > 0:
+                    new_train, _ = train_test_split(train, test_size=drop_step, random_state=seed + p,
+                                                    stratify=train.iloc[:, -1])
+                    new_train = apply_noise(new_train, mu, sigma_step, data_name,
+                                            seed + p + i)
+                else:
+                    new_train = train.copy()
                 divergence = compute_divergence(original_data=train,
                                                 perturbed_data=new_train)
                 results = pd.concat([results, pd.DataFrame.from_records([{'divergence': divergence}])])

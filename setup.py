@@ -17,8 +17,9 @@ from experiments import generate_neural_network_breast_cancer, generate_neural_n
     generate_neural_network_splice_junction, SEED
 from figures import plot_cm
 from knowledge import PATH as KNOWLEDGE_PATH, compute_confusion_matrix
-from experiments import experiment_with_data_drop, experiment_with_data_noise, \
-    compute_divergence_over_experiments_with_data_noise, compute_divergence_over_experiments_experiment_with_data_drop
+from experiments import experiment_with_data_drop, experiment_with_data_noise, experiment_with_data_drop_and_noise, \
+    compute_divergence_over_experiments_with_data_noise, compute_divergence_over_experiments_experiment_with_data_drop, \
+    compute_divergence_over_experiments_experiment_with_data_drop_and_noise
 from statistics import compute_robustness
 
 
@@ -49,7 +50,7 @@ class LoadDatasets(distutils.cmd.Command):
 
 class RunExperiments(distutils.cmd.Command):
     description = 'run experiments'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])'),
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], m[ix = drop + noise])'),
                     ('dataset=', 'd',
                      'dataset to run the experiments on (b[reast cancer], s[plice junction], c[ensus income])'),
                     ('predictor=', 'p', 'predictors to use (u[neducated], kins, kill, kbann)')]
@@ -72,6 +73,8 @@ class RunExperiments(distutils.cmd.Command):
                 self.function = 'drop'
             elif self.type.lower() == 'n':
                 self.function = 'noise'
+            elif self.type.lower() == 'm':
+                self.function = 'mix'
         if self.dataset:
             if self.dataset.lower() == 'b':
                 self.datasets = [BreastCancer]
@@ -108,9 +111,15 @@ class RunExperiments(distutils.cmd.Command):
                     if self.function == 'drop':
                         experiment_with_data_drop(data, uneducated, dataset.name, name, self.population_size,
                                                   self.metrics, loss=loss)
-                    else:
+                    elif self.function == 'noise':
                         experiment_with_data_noise(data, uneducated, dataset.name, name, self.population_size,
                                                    self.metrics, sigma=1, loss=loss)
+                    elif self.function == 'mix':
+                        experiment_with_data_drop_and_noise(data, uneducated, dataset.name, name, self.population_size,
+                                                            self.metrics, sigma=0, loss=loss)
+                    else:
+                        raise ValueError('Function {} is not available as a possible '
+                                         'experiment setup!'.format(self.function))
                 else:
                     if name == 'kins':
                         feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
@@ -131,9 +140,15 @@ class RunExperiments(distutils.cmd.Command):
                     if self.function == 'drop':
                         experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size,
                                                   self.metrics, loss=loss)
-                    else:
+                    elif self.function == 'noise':
                         experiment_with_data_noise(data, predictor, dataset.name, name, self.population_size,
                                                    self.metrics, sigma=1, loss=loss)
+                    elif self.function == 'mix':
+                        experiment_with_data_drop_and_noise(data, predictor, dataset.name, name, self.population_size,
+                                                            self.metrics, sigma=0, loss=loss)
+                    else:
+                        raise ValueError('Function {} is not available as a possible '
+                                         'experiment setup!'.format(self.function))
 
 
 class RunExperimentsDivergence(RunExperiments):
@@ -147,15 +162,22 @@ class RunExperimentsDivergence(RunExperiments):
             if self.function == 'drop':
                 compute_divergence_over_experiments_experiment_with_data_drop(data, dataset.name,
                                                                               self.population_size)
-            else:
+            elif self.function == 'noise':
                 compute_divergence_over_experiments_with_data_noise(data, dataset.name,
                                                                     self.population_size,
                                                                     sigma=1)
+            elif self.function == 'mix':
+                compute_divergence_over_experiments_experiment_with_data_drop_and_noise(data, dataset.name,
+                                                                                        self.population_size,
+                                                                                        sigma=0)
+            else:
+                raise ValueError('Function {} is not available as a possible '
+                                 'experiment setup!'.format(self.function))
 
 
 class ComputeMetrics(distutils.cmd.Command):
     description = 'print robustness metric'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], m[ix = drop + noise])')]
     exp_type = None
     experiments = None
     function = 'drop'
@@ -169,6 +191,8 @@ class ComputeMetrics(distutils.cmd.Command):
                 self.function = 'drop'
             elif self.type.lower() == 'n':
                 self.function = 'noise'
+            elif self.type.lower() == 'm':
+                self.function = 'mix'
 
     def run(self) -> None:
         from results import PATH as RESULT_PATH
@@ -184,7 +208,7 @@ class ComputeMetrics(distutils.cmd.Command):
 
 class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
     description = 'generate comparative distribution curves'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], m[ix = drop + noise])')]
     exp_type = None
     experiments = None
 
@@ -217,7 +241,7 @@ class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
 
 class GenerateDivergencesPlots(distutils.cmd.Command):
     description = 'generate divergences plots'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], m[ix = drop + noise])')]
     exp_type = None
     experiments = None
 
@@ -232,13 +256,24 @@ class GenerateDivergencesPlots(distutils.cmd.Command):
             elif self.type.lower() == 'n':
                 self.exp_type = 'noise'
                 self.experiments = 11
+            elif self.type.lower() == 'm':
+                self.exp_type = 'mix'
+                self.experiments = 20
 
     def run(self) -> None:
         from figures import plot_divergences_distributions
         from results.drop import PATH as DROP_RESULT_PATH
         from results.noise import PATH as NOISE_RESULT_PATH
+        from results.drop_and_noise import PATH as DROP_AND_NOISE_RESULT_PATH
 
-        path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
+        if self.exp_type == 'drop':
+            path = DROP_RESULT_PATH
+        elif self.exp_type == 'noise':
+            path = NOISE_RESULT_PATH
+        elif self.exp_type == 'mix':
+            path = DROP_AND_NOISE_RESULT_PATH
+        else:
+            raise ValueError('Experiment type {} is not available!'.format(self.exp_type))
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         print(f'Generating plots for all datasets')
         results = {}
@@ -260,7 +295,7 @@ class GenerateDivergencesPlots(distutils.cmd.Command):
 
 class GeneratePlots(distutils.cmd.Command):
     description = 'generate plots'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], m[ix = drop + noise])')]
     exp_type = None
     experiments = None
 
@@ -275,13 +310,24 @@ class GeneratePlots(distutils.cmd.Command):
             elif self.type.lower() == 'n':
                 self.exp_type = 'noise'
                 self.experiments = 11
+            elif self.type.lower() == 'm':
+                self.exp_type = 'mix'
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_accuracy_distributions
         from results.drop import PATH as DROP_RESULT_PATH
         from results.noise import PATH as NOISE_RESULT_PATH
+        from results.drop_and_noise import PATH as DROP_AND_NOISE_RESULT_PATH
 
-        path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
+        if self.exp_type == 'drop':
+            path = DROP_RESULT_PATH
+        elif self.exp_type == 'noise':
+            path = NOISE_RESULT_PATH
+        elif self.exp_type == 'mix':
+            path = DROP_AND_NOISE_RESULT_PATH
+        else:
+            raise ValueError('Experiment type {} is not available!'.format(self.exp_type))
         predictor_names = ['uneducated', 'kins', 'kill', 'kbann']
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metrics = ['accuracy', 'precision', 'recall']
@@ -307,7 +353,7 @@ class GeneratePlots(distutils.cmd.Command):
 
 class GenerateComparisonPlots(distutils.cmd.Command):
     description = 'generate comparison plots'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], m[ix = drop + noise])')]
     exp_type = None
     experiments = None
 
@@ -322,13 +368,24 @@ class GenerateComparisonPlots(distutils.cmd.Command):
             elif self.type.lower() == 'n':
                 self.exp_type = 'noise'
                 self.experiments = 11
+            elif self.type.lower() == 'm':
+                self.exp_type = 'mix'
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_distributions_comparison
         from results.drop import PATH as DROP_RESULT_PATH
         from results.noise import PATH as NOISE_RESULT_PATH
+        from results.drop_and_noise import PATH as DROP_AND_NOISE_RESULT_PATH
 
-        path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
+        if self.exp_type == 'drop':
+            path = DROP_RESULT_PATH
+        elif self.exp_type == 'noise':
+            path = NOISE_RESULT_PATH
+        elif self.exp_type == 'mix':
+            path = DROP_AND_NOISE_RESULT_PATH
+        else:
+            raise ValueError('Experiment type {} is not available!'.format(self.exp_type))
         educated_predictors = ['kins', 'kill', 'kbann']
         datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metric = 'accuracy'
@@ -357,12 +414,13 @@ class GenerateComparisonPlots(distutils.cmd.Command):
                         results1.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
                     for file in files2:
                         results2.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
-                    plot_distributions_comparison(results1, results2, dataset, self.exp_type, 5, self.experiments, 'uneducated', educated, metric)
+                    plot_distributions_comparison(results1, results2, dataset, self.exp_type, 5, self.experiments,
+                                                  'uneducated', educated, metric)
 
 
 class GenerateComparativeDistributionCurves(distutils.cmd.Command):
     description = 'generate comparative distribution curves'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise])')]
+    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], m[ix = drop + noise])')]
     exp_type = None
     experiments = None
 
@@ -377,13 +435,24 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
             elif self.type.lower() == 'n':
                 self.exp_type = 'noise'
                 self.experiments = 11
+            elif self.type.lower() == 'm':
+                self.exp_type = 'mix'
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_average_accuracy_curves
         from results.drop import PATH as DROP_RESULT_PATH
         from results.noise import PATH as NOISE_RESULT_PATH
+        from results.drop_and_noise import PATH as DROP_AND_NOISE_RESULT_PATH
 
-        path = DROP_RESULT_PATH if self.exp_type == 'drop' else NOISE_RESULT_PATH
+        if self.exp_type == 'drop':
+            path = DROP_RESULT_PATH
+        elif self.exp_type == 'noise':
+            path = NOISE_RESULT_PATH
+        elif self.exp_type == 'mix':
+            path = DROP_AND_NOISE_RESULT_PATH
+        else:
+            raise ValueError('Experiment type {} is not available!'.format(self.exp_type))
         educated_predictors = ['kins', 'kill', 'kbann']
         datasets = [BreastCancer]  # [BreastCancer, SpliceJunction, CensusIncome]
         metric = 'accuracy'
