@@ -114,6 +114,38 @@ def _apply_noise_to_census_income(data: pd.DataFrame, mu: float, sigma: float, s
     return data_copy
 
 
+def flip_labels(data: pd.DataFrame, label_flip_p: float, dataset_name: str, seed: int) -> pd.DataFrame:
+    """
+    Apply label flipping to the data.
+    :param data: the dataset
+    :param label_flip_p: probability of flipping a label
+    :param dataset_name:
+    :param seed: the seed for the random number generator
+    :return:
+    """
+    if dataset_name == BreastCancer.name:
+        label_name = 'diagnosis'
+    elif dataset_name == SpliceJunction.name:
+        label_name = 'class'
+    elif dataset_name == CensusIncome.name:
+        label_name = 'income'
+    else:
+        raise ValueError('The dataset name is not valid.')
+    # Seed the flipping process
+    np.random.seed(seed)
+    data_copy = data.copy()
+    possible_labels = list(set(data_copy[label_name].tolist()))
+
+    def random_flip(label, flipping_prob):
+        if np.random.choice([1, 0], p=[flipping_prob, 1 - flipping_prob]) == 1:
+            return np.random.choice([lab for lab in possible_labels if lab != label])
+        else:
+            return label
+
+    data_copy[label_name] = data_copy[label_name].apply(lambda j: random_flip(j, label_flip_p))
+    return data_copy
+
+
 def reverse_one_hot(data: pd.DataFrame, one_hot_features: list) -> pd.DataFrame:
     reformatted_data = data.copy()
     for feature in one_hot_features:
@@ -231,10 +263,12 @@ def compute_robustness(perturbation: str, dataset: BreastCancer or SpliceJunctio
         divergences = []
         pi2 = []
         for i in range(n) if perturbation == 'noise' else range(1, n):
-            divergences.append(np.mean(pd.read_csv(RESULT_PATH / perturbation / dataset.name / 'divergences' / f'{i + 1}.csv'))[0])
+            divergences.append(
+                np.mean(pd.read_csv(RESULT_PATH / perturbation / dataset.name / 'divergences' / f'{i + 1}.csv'))[0])
             pi2.append(np.mean(pd.read_csv(RESULT_PATH / perturbation / dataset.name / model / f'{i + 1}.csv')[metric]))
         robustness_dict[model + ' absolute'] = (sum(np.asarray(divergences) / (pi1 / pi2)) / n)
     for model in models:
-        robustness_dict[model + ' relative'] = robustness_dict[model + ' absolute'] / robustness_dict['uneducated absolute']
+        robustness_dict[model + ' relative'] = robustness_dict[model + ' absolute'] / robustness_dict[
+            'uneducated absolute']
 
     return robustness_dict
