@@ -69,8 +69,8 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
             noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
         else:
             noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
-        labels = [y + " & " + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
-        ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=90)
+        labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $P_f$')
         labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
@@ -155,8 +155,8 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
             noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
         else:
             noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
-        labels = [y + " & " + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
-        ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=90)
+        labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
+        ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $P_f$')
         labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
@@ -256,11 +256,10 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
             noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
         else:
             noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
-        labels = [y + " & " + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
+        labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels,
-                      fontsize=fontsizes['ticks'], rotation=90)
-        ax.set_yscale('log')
-        plt.legend(loc='lower right', prop=legend_font)
+                      fontsize=15, rotation=80)
+        plt.legend(loc='lower left', prop=legend_font)
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $P_f$', fontsize=fontsizes['axis'])
         labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
@@ -360,9 +359,9 @@ def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, Sp
                 noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
             else:
                 noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
-            labels = [y + " & " + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
+            labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
             ax.set_xticks(np.arange(1, steps + 1, 1), labels,
-                          fontsize=fontsizes['ticks'], rotation=90)
+                          fontsize=15, rotation=80)
             ax.set_yscale('log')
             plt.legend(loc='lower right', prop=legend_font)
         elif exp_type == 'label_flip':
