@@ -10,7 +10,11 @@ from data import BreastCancer, SpliceJunction, CensusIncome
 from experiments import TEST_RATIO
 from mlxtend.plotting import plot_confusion_matrix
 
-mpl.use('TkAgg')  # !IMPORTANT
+try:
+    mpl.use('TkAgg')  # !IMPORTANT
+except ImportError:
+    print('Couldn\'t import TkAgg, plotting may break down!\n'
+          'Trying import for running experiments on headless mode...')
 
 PATH = Path(__file__).parents[0]
 
