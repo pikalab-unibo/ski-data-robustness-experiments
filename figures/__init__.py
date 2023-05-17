@@ -322,7 +322,8 @@ def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, Sp
         stds = []
         for i in range(len(dataset_divergences)):
             curve.append(np.mean(reject_outliers(dataset_divergences[i]['divergence'])))  # means of the distributions
-        curve[0] += 1e-15
+        if exp_type in ['drop', 'mix']:
+            curve[0] += 1e-15
         ax.plot(np.arange(1, steps + 1, 1),
                 curve,
                 # linestyle=lines[dataset.name],
