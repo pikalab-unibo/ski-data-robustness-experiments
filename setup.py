@@ -25,6 +25,11 @@ from experiments import experiment_with_data_drop, experiment_with_data_noise, e
     compute_divergence_over_experiments_with_label_flipping
 from statistics import compute_robustness
 
+import cpuinfo
+cpu_brand = cpuinfo.get_cpu_info()['brand_raw']
+if cpu_brand == 'Intel(R) Xeon(R) Gold 6226R CPU @ 2.90GHz':
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 
 class LoadDatasets(distutils.cmd.Command):
     description = 'download necessary datasets for the experiments'

@@ -7,3 +7,4 @@ setuptools~=66.1.1
 tensorflow~=2.7.0
 scikit-learn~=1.2.0
 mlxtend~=0.21.0
+py-cpuinfo~=9.0.0
