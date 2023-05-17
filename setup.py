@@ -5,6 +5,7 @@ import pandas as pd
 from keras.utils.generic_utils import get_custom_objects
 from psyki.fuzzifiers.netbuilder import NetBuilder
 from psyki.logic.prolog import TuProlog
+from psyki.logic import Theory
 from psyki.ski import Injector
 from setuptools import find_packages, setup
 from tensorflow.python.framework.random_seed import set_seed
@@ -129,20 +130,18 @@ class RunExperiments(distutils.cmd.Command):
                                          'experiment setup!'.format(self.function))
                 else:
                     if name == 'kins':
-                        feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
-                        injector = Injector.kins(uneducated, feature_mapping)
-                        knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                        injector = Injector.kins(uneducated)
                     elif name == 'kill':
-                        feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
-                        class_mapping = dataset.class_mapping_short
-                        injector = Injector.kill(uneducated, class_mapping, feature_mapping)
-                        knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+                        injector = Injector.kill(uneducated)
                     elif name == 'kbann':
-                        feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
-                        injector = Injector.kbann(uneducated, feature_mapping)
-                        knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
-                    for k in knowledge:
-                        k.trainable = True
+                        injector = Injector.kbann(uneducated)
+                    else:
+                        raise ValueError('Injector "{}" not available!'.format(name))
+                    class_mapping = dataset.class_mapping_short
+                    knowledge = Theory(TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name),
+                                       data,
+                                       class_mapping)
+                    knowledge.set_all_formulae_trainable()
                     predictor = injector.inject(knowledge)
                     if self.function == 'drop':
                         experiment_with_data_drop(data, predictor, dataset.name, name, self.population_size,
@@ -237,7 +236,9 @@ class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
         metrics = ['accuracy']
         for dataset in datasets:
             data = pd.read_csv(dataset.file_name, header=0, sep=",", encoding='utf8')
-            knowledge = TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name).formulae
+            knowledge = Theory(TuProlog.from_file(KNOWLEDGE_PATH / dataset.knowledge_file_name),
+                               data,
+                               dataset.class_mapping_short)
             if dataset.name == BreastCancer.name:
                 predictor = generate_neural_network_breast_cancer(metrics)
             elif dataset.name == SpliceJunction.name:
@@ -246,7 +247,7 @@ class GenerateKnowledgeConfusionMatrix(distutils.cmd.Command):
                 predictor = generate_neural_network_census_income(metrics)
             feature_mapping = {k: v for v, k in enumerate(data.columns[:-1])}
             fuzzifier = NetBuilder(predictor.input, feature_mapping)
-            output = Concatenate(axis=1)(fuzzifier.visit(knowledge))
+            output = Concatenate(axis=1)(fuzzifier.visit(knowledge.formulae))
             predictor = Model(predictor.input, output)
             predictor.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
             cm = compute_confusion_matrix(data, predictor, dataset.name).to_numpy()
