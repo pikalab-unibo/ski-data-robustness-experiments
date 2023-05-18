@@ -27,7 +27,7 @@ from statistics import compute_robustness
 
 import cpuinfo
 cpu_brand = cpuinfo.get_cpu_info()['brand_raw']
-if cpu_brand == 'Intel(R) Xeon(R) Gold 6226R CPU @ 2.90GHz':
+if cpu_brand in ['Intel(R) Xeon(R) Gold 6226R CPU @ 2.90GHz', 'Intel(R) Xeon(R) W-2275 CPU @ 3.30GHz']:
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 
