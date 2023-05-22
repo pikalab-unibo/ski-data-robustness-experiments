@@ -1,0 +1,642 @@
+Running experiments for splice-junction dataset
+Experiment with data noise: splice-junction - kins
+
+
+Step 1/10
+
+Population 1/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 2/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 3/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 4/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 5/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 6/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 7/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 8/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 9/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 10/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 11/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 12/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 13/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 14/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 15/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 16/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 17/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 18/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 19/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 20/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 21/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 22/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 23/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 24/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 25/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 26/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 27/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 28/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 29/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 30/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+
+
+Step 2/10
+
+Population 1/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 2/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 3/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 4/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 5/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 6/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 7/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 8/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 9/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 10/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 11/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 12/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 13/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 14/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 15/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 16/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 17/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 18/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 19/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 20/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 21/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 22/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 23/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 24/30
+Accuracy: 0.95 - Precision: 1.00 - Recall: 0.99
+Population 25/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 26/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 27/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 28/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 29/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 30/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+
+
+Step 3/10
+
+Population 1/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 2/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 3/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 4/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 5/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 6/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 7/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 8/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 9/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 10/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 11/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 12/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 13/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 14/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 15/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 16/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 17/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 18/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 19/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 20/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 21/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 22/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 23/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 24/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 25/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 26/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 27/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 28/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 29/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 30/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+
+
+Step 4/10
+
+Population 1/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 2/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 3/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 4/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 5/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 6/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 7/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 8/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 9/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 10/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 11/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 12/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 13/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 14/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 15/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 16/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 17/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 18/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+Population 19/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 20/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 21/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 22/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 23/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 24/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 25/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 26/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 27/30
+Accuracy: 0.93 - Precision: 1.00 - Recall: 0.99
+Population 28/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 29/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 30/30
+Accuracy: 0.94 - Precision: 1.00 - Recall: 0.99
+
+
+Step 5/10
+
+Population 1/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 2/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 3/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 4/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 5/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 6/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 7/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 8/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 9/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 10/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 11/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 12/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 13/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 14/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 15/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 16/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 17/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 18/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 19/30
+Accuracy: 0.90 - Precision: 1.00 - Recall: 0.99
+Population 20/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 21/30
+Accuracy: 0.92 - Precision: 1.00 - Recall: 0.99
+Population 22/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 23/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 24/30
+Accuracy: 0.91 - Precision: 1.00 - Recall: 0.99
+Population 25/30
+Accuracy: 0.89 - Precision: 1.00 - Recall: 0.99
+Population 26/30
+Accuracy: 0.91 - Precision: 0.99 - Recall: 0.99
+Population 27/30
+Accuracy: 0.90 - Precision: 0.99 - Recall: 0.99
+Population 28/30
+Accuracy: 0.91 - Precision: 0.99 - Recall: 0.99
+Population 29/30
+Accuracy: 0.91 - Precision: 0.99 - Recall: 0.99
+Population 30/30
+Accuracy: 0.91 - Precision: 0.99 - Recall: 0.99
+
+
+Step 6/10
+
+Population 1/30
+Accuracy: 0.90 - Precision: 0.99 - Recall: 0.99
+Population 2/30
+Accuracy: 0.90 - Precision: 0.99 - Recall: 0.99
+Population 3/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 4/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 5/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 6/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 7/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 8/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 9/30
+Accuracy: 0.90 - Precision: 0.99 - Recall: 0.99
+Population 10/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 11/30
+Accuracy: 0.91 - Precision: 0.99 - Recall: 0.99
+Population 12/30
+Accuracy: 0.91 - Precision: 0.99 - Recall: 0.99
+Population 13/30
+Accuracy: 0.90 - Precision: 0.99 - Recall: 0.99
+Population 14/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 15/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 16/30
+Accuracy: 0.90 - Precision: 0.99 - Recall: 0.99
+Population 17/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 18/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 19/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 20/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 21/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 22/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 23/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 24/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 25/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 26/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 27/30
+Accuracy: 0.90 - Precision: 0.99 - Recall: 0.99
+Population 28/30
+Accuracy: 0.90 - Precision: 0.99 - Recall: 0.99
+Population 29/30
+Accuracy: 0.89 - Precision: 0.99 - Recall: 0.99
+Population 30/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+
+
+Step 7/10
+
+Population 1/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 2/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 3/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 4/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 5/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 6/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 7/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 8/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 9/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 10/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 11/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 12/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 13/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 14/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 15/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 16/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 17/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 18/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 19/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 20/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 21/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 22/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 23/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 24/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 25/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 26/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 27/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 28/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 29/30
+Accuracy: 0.88 - Precision: 0.99 - Recall: 0.99
+Population 30/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+
+
+Step 8/10
+
+Population 1/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 2/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 3/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 4/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 5/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 6/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 7/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 8/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 9/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 10/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+Population 11/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 12/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 13/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 14/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 15/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 16/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 17/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 18/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 19/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 20/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 21/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 22/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 23/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 24/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 25/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 26/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 27/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 28/30
+Accuracy: 0.86 - Precision: 0.99 - Recall: 0.99
+Population 29/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 30/30
+Accuracy: 0.87 - Precision: 0.99 - Recall: 0.99
+
+
+Step 9/10
+
+Population 1/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 2/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 3/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 4/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 5/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 6/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 7/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 8/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 9/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 10/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 11/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 12/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 13/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 14/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 15/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 16/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 17/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 18/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 19/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 20/30
+Accuracy: 0.85 - Precision: 0.99 - Recall: 0.99
+Population 21/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 22/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 23/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 24/30
+Accuracy: 0.84 - Precision: 0.99 - Recall: 0.99
+Population 25/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 26/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 27/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 28/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 29/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 30/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+
+
+Step 10/10
+
+Population 1/30
+Accuracy: 0.79 - Precision: 0.99 - Recall: 0.99
+Population 2/30
+Accuracy: 0.81 - Precision: 0.99 - Recall: 0.99
+Population 3/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 4/30
+Accuracy: 0.81 - Precision: 0.99 - Recall: 0.99
+Population 5/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 6/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 7/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 8/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 9/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 10/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 11/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 12/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 13/30
+Accuracy: 0.81 - Precision: 0.99 - Recall: 0.99
+Population 14/30
+Accuracy: 0.79 - Precision: 0.99 - Recall: 0.99
+Population 15/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 16/30
+Accuracy: 0.81 - Precision: 0.99 - Recall: 0.99
+Population 17/30
+Accuracy: 0.79 - Precision: 0.99 - Recall: 0.99
+Population 18/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 19/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 20/30
+Accuracy: 0.81 - Precision: 0.99 - Recall: 0.99
+Population 21/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 22/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
+Population 23/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 24/30
+Accuracy: 0.81 - Precision: 0.99 - Recall: 0.99
+Population 25/30
+Accuracy: 0.81 - Precision: 0.99 - Recall: 0.99
+Population 26/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 27/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 28/30
+Accuracy: 0.82 - Precision: 0.99 - Recall: 0.99
+Population 29/30
+Accuracy: 0.80 - Precision: 0.99 - Recall: 0.99
+Population 30/30
+Accuracy: 0.83 - Precision: 0.99 - Recall: 0.99
