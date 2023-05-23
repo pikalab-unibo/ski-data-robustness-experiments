@@ -1,6 +1,6 @@
-# ski-data-robustness-experiments-kr-2023
+# Are Symbolic Knowledge Injection Techniques Robust Against Data Quality Degradation?
 Experiments for "Are Symbolic Knowledge Injection Techniques Robust Against Data Quality
-Degradation?" (KR2023).
+Degradation?" (CIKM-2023).
 
 ## 1. Download datasets
 Execute the command ```python -m setup.py load_datasets``` to download datasets from UCI website.
