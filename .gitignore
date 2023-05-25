@@ -6,6 +6,7 @@ figures/*/*/*.png
 figures/*/*/*.pdf
 figures/*/*/*.svg
 .DS_Store
+logs
 
 # JetBrains related
 .idea/
