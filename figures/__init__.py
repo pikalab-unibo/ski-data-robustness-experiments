@@ -82,8 +82,12 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
     _create_missing_directories(PATH, exp_type, dataset)
     if not os.path.exists(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name)):
         os.makedirs(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name))
-    plt.savefig(
-        PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name + os.sep + metric + '-distributions.svg'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep +
+                        predictor_name + os.sep + metric + '-distributions.svg'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep +
+                        predictor_name + os.sep + metric + '-distributions.pdf'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep +
+                        predictor_name + os.sep + metric + '-distributions.png'))
 
 
 def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.DataFrame],
@@ -167,8 +171,12 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
-    plt.savefig(PATH / (
-            exp_type + os.sep + dataset.name + os.sep + predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.svg'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep +
+                        predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.svg'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep +
+                        predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.pdf'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep +
+                        predictor_name1 + '-' + predictor_name2 + '-' + metric + '-distributions.png'))
 
 
 def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
@@ -277,6 +285,8 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
         predictor_names) + '-' + metric + '-average-curves.svg'))
     plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(
         predictor_names) + '-' + metric + '-average-curves.pdf'))
+    plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(
+        predictor_names) + '-' + metric + '-average-curves.png'))
 
 
 def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, SpliceJunction, CensusIncome]], list],
@@ -380,6 +390,7 @@ def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, Sp
     _create_missing_directories(PATH, exp_type, 'divergences')
     plt.savefig(PATH / (exp_type + os.sep + 'divergences' + os.sep + 'KL-' + exp_type + '-average-curves.svg'))
     plt.savefig(PATH / (exp_type + os.sep + 'divergences' + os.sep + 'KL-' + exp_type + '-average-curves.pdf'))
+    plt.savefig(PATH / (exp_type + os.sep + 'divergences' + os.sep + 'KL-' + exp_type + '-average-curves.png'))
 
 
 def plot_cm(data: np.ndarray, class_names: list[str], dataset_name: str):
