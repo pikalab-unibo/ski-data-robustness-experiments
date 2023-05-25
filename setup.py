@@ -208,7 +208,7 @@ class ComputeMetrics(distutils.cmd.Command):
             elif self.type.lower() == 'n':
                 self.function = 'noise'
             elif self.type.lower() == 'm':
-                self.function = 'mix'
+                self.function = 'drop_and_noise'
             elif self.type.lower() == 'l':
                 self.function = 'label_flip'
 
