@@ -16,7 +16,9 @@ if __name__ == '__main__':
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-e", "--experiment", type=str, default='train', help="train to run all training, "
                                                                               "kl to run all divergences, "
-                                                                              "metric to compute all metrics")
+                                                                              "metric to compute all metrics, "
+                                                                              "plot_accs for plotting all accuracies, "
+                                                                              "plot_kl for plotting all kl divergences")
     options = parser.parse_args()
 
     if options.experiment.lower() in ['train', 't']:
@@ -39,5 +41,17 @@ if __name__ == '__main__':
         commands = ["python setup.py compute_robustness -t {}".format(e) for e in degradations]
         logfiles = ["logs/robustness computation of e={}.txt".format(e) for e in degradations]
         run_all_in_parallel(commands, logfiles)
+    elif options.experiment.lower() in ['plot_accs', 'plot_acc']:
+        degradations = ["d", "n", "l", "m"]
+        commands = ["python setup.py generate_comparative_distribution_curves -t {}".format(e) for e in degradations]
+        logfiles = ["logs/plot accuracies of e={}.txt".format(e) for e in degradations]
+        run_all_in_parallel(commands, logfiles)
+    elif options.experiment.lower() in ['plot_kl', 'plot_divergence']:
+        degradations = ["d", "n", "l", "m"]
+        commands = ["python setup.py generate_divergences_plots -t {}".format(e) for e in degradations]
+        logfiles = ["logs/plot divergences of e={}.txt".format(e) for e in degradations]
+        run_all_in_parallel(commands, logfiles)
+    else:
+        raise ValueError('Option "{}" is not a valid option!'.format(options.experiment))
 
 
