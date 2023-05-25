@@ -497,11 +497,10 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
             path = LABEL_FLIP_RESULT_PATH
         else:
             raise ValueError('Experiment type {} is not available!'.format(self.exp_type))
-        educated_predictors = ['kins', 'kill', 'kbann']
-        datasets = [BreastCancer]  # [BreastCancer, SpliceJunction, CensusIncome]
+        datasets = [BreastCancer, SpliceJunction, CensusIncome]
         metric = 'accuracy'
         for dataset in datasets:
-            print(f'Generating comparative distribution curves for {dataset.name} dataset')
+            educated_predictors = ['kins', 'kill', 'kbann']
             directory1 = path / dataset.name / 'uneducated'
             files1 = os.listdir(directory1)
             files1 = sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()])))
