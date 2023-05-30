@@ -19,7 +19,7 @@ N_STEP_DROP = 19  # from 0 to N_STEPS, 0 means no noise, N_STEPS means maximum n
 N_STEP_NOISE = 10
 NOISE = 1
 N_STEP_DROP_NOISE = 20
-N_STEP_LABEL_FLIP = 20
+N_STEP_LABEL_FLIP = 10
 MAX_LABEL_FLIP_P = 0.9
 EPOCHS = 100
 BATCH_SIZE = 32
@@ -124,7 +124,7 @@ def experiment_with_data_noise(data: pd.DataFrame, predictor: Model, data_name: 
                                loss: str = 'categorical_crossentropy'):
     print("Experiment with data noise: {} - {}".format(data_name, ski_name))
     train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
-    sigma_normaliser = 10 if data_name == SpliceJunction.name else 1
+    sigma_normaliser = 10
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
     if ski_name == 'kbann':
@@ -164,7 +164,7 @@ def experiment_with_data_drop_and_noise(data: pd.DataFrame,
                                         loss: str = 'categorical_crossentropy'):
     print("Experiment with data drop and data noise: {} - {}".format(data_name, ski_name))
     train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
-    sigma_normaliser = 10 if data_name == SpliceJunction.name else 1
+    sigma_normaliser = 10
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
     if ski_name == 'kbann':
@@ -239,7 +239,7 @@ def compute_divergence_over_experiments_with_data_noise(data: pd.DataFrame,
                                                         seed: int = SEED):
     print("Computing divergence scores for experiments with data noise: {}".format(data_name))
     train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
-    sigma_normaliser = 10 if data_name == SpliceJunction.name else 1
+    sigma_normaliser = 10
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
     for i in range(n_steps):
@@ -306,7 +306,7 @@ def compute_divergence_over_experiments_experiment_with_data_drop_and_noise(data
                                                                             seed: int = SEED):
     print("Experiment with data drop and noise: {}".format(data_name))
     train, test = train_test_split(data, test_size=test_size, random_state=seed, stratify=data.iloc[:, -1])
-    sigma_normaliser = 10 if data_name == SpliceJunction.name else 1
+    sigma_normaliser = 10
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
     for i in range(n_steps):

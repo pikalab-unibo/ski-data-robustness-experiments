@@ -32,7 +32,7 @@ if __name__ == '__main__':
         run_all_in_parallel(commands, logfiles)
     elif options.experiment.lower() in ['kl', 'divergence']:
         datas = ["b", "c", "s"]
-        degradations = ["d", "n", "l", "m"]
+        degradations = ["d", "n", "l"]  # , "m"]
         commands = ["python setup.py run_divergence -d {} -t {}".format(d, e) for d in datas for e in degradations]
         logfiles = ["logs/kl of d={}-e={}.txt".format(d, e) for d in datas for e in degradations]
         run_all_in_parallel(commands, logfiles)

@@ -281,7 +281,7 @@ class GenerateDivergencesPlots(distutils.cmd.Command):
                 self.experiments = 20
             elif self.type.lower() == 'l':
                 self.exp_type = 'label_flip'
-                self.experiments = 21
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_divergences_distributions
@@ -341,7 +341,7 @@ class GeneratePlots(distutils.cmd.Command):
                 self.experiments = 20
             elif self.type.lower() == 'l':
                 self.exp_type = 'label_flip'
-                self.experiments = 21
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_accuracy_distributions
@@ -405,7 +405,7 @@ class GenerateComparisonPlots(distutils.cmd.Command):
                 self.experiments = 11
             elif self.type.lower() == 'l':
                 self.exp_type = 'label_flip'
-                self.experiments = 20
+                self.experiments = 10
 
     def run(self) -> None:
         from figures import plot_distributions_comparison
@@ -478,7 +478,7 @@ class GenerateComparativeDistributionCurves(distutils.cmd.Command):
                 self.experiments = 20
             elif self.type.lower() == 'l':
                 self.exp_type = 'label_flip'
-                self.experiments = 21
+                self.experiments = 11
 
     def run(self) -> None:
         from figures import plot_average_accuracy_curves
