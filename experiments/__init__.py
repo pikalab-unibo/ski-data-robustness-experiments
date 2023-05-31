@@ -213,7 +213,7 @@ def experiment_with_label_flipping(data: pd.DataFrame,
         set_seed(seed)
         predictor = clone_model(predictor)
     for i in range(n_steps):
-        label_flip_p = (max_p / n_steps) * i
+        label_flip_p = (max_p / (n_steps - 1)) * i
         print("\n\nStep {}/{} -> P(Label flip) = {}\n".format(i + 1, n_steps, label_flip_p))
         _create_missing_directories(LABEL_FLIP_RESULTS_PATH, data_name, ski_name)
         file_name = LABEL_FLIP_RESULTS_PATH / (data_name + os.sep + ski_name + os.sep + "{}.csv".format(i + 1))
@@ -348,7 +348,7 @@ def compute_divergence_over_experiments_with_label_flipping(data: pd.DataFrame,
     x_test = test.iloc[:, :-1]
     y_test = to_categorical(test.iloc[:, -1:])
     for i in range(n_steps):
-        label_flip_p = (max_p / n_steps) * i
+        label_flip_p = (max_p / (n_steps - 1)) * i
         print("\n\nStep {}/{} -> P(Label flip) = {}\n".format(i + 1, n_steps, label_flip_p))
         _create_missing_directories(LABEL_FLIP_RESULTS_PATH, data_name, 'divergences')
         file_name = LABEL_FLIP_RESULTS_PATH / (data_name + os.sep + 'divergences' + os.sep + "{}.csv".format(i + 1))
