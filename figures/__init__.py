@@ -9,6 +9,7 @@ import matplotlib.font_manager as font_manager
 from data import BreastCancer, SpliceJunction, CensusIncome
 from experiments import TEST_RATIO
 from mlxtend.plotting import plot_confusion_matrix
+from matplotlib.ticker import FormatStrFormatter
 
 try:
     mpl.use('TkAgg')  # !IMPORTANT
@@ -240,16 +241,16 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
         labels = [y + " " + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels,
                       fontsize=fontsizes['ticks'], rotation=60)
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         plt.legend(loc='lower left', prop=legend_font)
     elif exp_type == 'noise':
         plt.xlabel(r'Noise intensity ($v$)',
                    fontsize=fontsizes['axis'])
-        #if dataset.name == SpliceJunction.name:
+
         ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)],
                           fontsize=fontsizes['ticks'])
-        #else:
-        #    ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)],
-        #                  fontsize=fontsizes['ticks'])
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
         plt.legend(loc='upper right', prop=legend_font)
 
     elif exp_type == 'label_flip':
@@ -257,6 +258,7 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
         labels = [r'$f$ = {:.2f}%'.format(100 * (0.9 / steps - 1) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels,
                       fontsize=fontsizes['ticks'], rotation=80)
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         plt.legend(loc='lower left', prop=legend_font)
     plt.yticks(fontsize=fontsizes['ticks'])
     plt.tight_layout()
