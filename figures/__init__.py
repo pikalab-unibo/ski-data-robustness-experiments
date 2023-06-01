@@ -19,7 +19,8 @@ except ImportError:
 PATH = Path(__file__).parents[0]
 
 
-def _create_missing_directories(path: Path, exp_type: str, dataset: BreastCancer or SpliceJunction or CensusIncome or str):
+def _create_missing_directories(path: Path, exp_type: str,
+                                dataset: BreastCancer or SpliceJunction or CensusIncome or str):
     if not os.path.exists(path / exp_type):
         os.makedirs(path / exp_type)
     if isinstance(dataset, str):
@@ -52,32 +53,32 @@ def plot_accuracy_distributions(results: list[pd.DataFrame], dataset: BreastCanc
     plt.title(dataset.name.capitalize().replace('-', ' ') + ' ' + predictor_name + ' ' + metric + ' distributions')
     plt.ylabel(metric.capitalize() + ' on test set')
     if exp_type == 'drop':
-        plt.xlabel('Cardinality of the training set')
-        drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
+        plt.xlabel('Cardinality of the training set and dropping probability ($d$)')
+        drop_percentage_labels = [f'($d$={100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
         drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
         labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels)
     elif exp_type == 'noise':
-        plt.xlabel('Noise level (sigma)')
-        if dataset.name == SpliceJunction.name:
-            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)])
-        else:
-            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)])
+        plt.xlabel('Noise intensity ($v$)')
+        # if dataset.name == SpliceJunction.name:
+        ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)])
+        # else:
+        #    ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)])
     elif exp_type == 'mix':
-        plt.xlabel(r'Cardinality of the training set ($\left\|\cdot\right\|$) and noise level ($\sigma$)')
+        plt.xlabel(r'Cardinality of the training set ($\left\|\cdot\right\|$) and noise intensity ($v$)')
         drop_percentage_labels = [r'$\left\|\cdot\right\|$ = ' \
                                   r'{}%'.format(100 - i) for i in range(0,
                                                                         drop_percentage * steps,
                                                                         drop_percentage)]
         if dataset.name == SpliceJunction.name:
-            noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
+            noise_value_labels = [r'$\sigma$={}'.format(i / 10) for i in range(steps)]
         else:
             noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
         labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     elif exp_type == 'label_flip':
-        plt.xlabel(r'Flipping probability $P_f$')
-        labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        plt.xlabel(r'Flipping probability $f$')
+        labels = [r'$f$ = {:.2f}%'.format(100 * (0.9 / steps) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     _create_missing_directories(PATH, exp_type, dataset)
     if not os.path.exists(PATH / (exp_type + os.sep + dataset.name + os.sep + predictor_name)):
@@ -160,14 +161,14 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
                                                                         drop_percentage * steps,
                                                                         drop_percentage)]
         if dataset.name == SpliceJunction.name:
-            noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
+            noise_value_labels = [r'$\sigma$={}'.format(i / 10) for i in range(steps)]
         else:
             noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
         labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $P_f$')
-        labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        labels = [r'$P_f$ = {:.2f}%'.format(100 * (0.9 / steps) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
@@ -223,58 +224,37 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
             curve = [np.mean((2 * p * r) / (p + r)) for p, r in zip(precisions, recalls)]
         else:
             curve = [np.mean(distribution[metric]) for distribution in experiments[i]]  # means of the distributions
-        # std_devs = [np.std(distribution[metric]) for distribution in experiments[i]]  # std devs of the distributions
         ax.plot(np.arange(1, steps + 1, 1), curve,
-                # linestyle=lines[predictor_names[i]],
                 marker=markers[predictor_names[i]],
                 markersize=10,
                 color=colors[predictor_names[i]],
                 label=predictor_names[i].upper(),
                 linewidth=3)
-        # ax.fill_between(np.arange(1, steps + 1, 1), np.array(curve) - np.array(std_devs),
-        #                 np.array(curve) + np.array(std_devs), alpha=0.2)
-    # plt.title(dataset.name.capitalize().replace('-', ' ') + ' ' + metric + ' average curves',
-    #           fontsize=fontsizes['title'])
     plt.ylabel(metric.capitalize() + ' on test set',
                fontsize=fontsizes['axis'])
     if exp_type == 'drop':
-        plt.xlabel('Cardinality of the training set',
+        plt.xlabel('Cardinality of the training set and dropping probability',
                    fontsize=fontsizes['axis'])
-        drop_percentage_labels = [f'({100 - i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
+        drop_percentage_labels = [f'($d$={i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
         drop_value_labels = [f'{round(data_size * (1 - (i * drop_percentage / 100)))}' for i in range(steps)]
-        # labels = [y + "\n" + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
         labels = [y + " " + x for x, y in zip(drop_percentage_labels, drop_value_labels)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels,
-                      fontsize=fontsizes['ticks'], rotation=45)
+                      fontsize=fontsizes['ticks'], rotation=60)
         plt.legend(loc='lower left', prop=legend_font)
     elif exp_type == 'noise':
-        plt.xlabel(r'Noise level ($\sigma$)',
+        plt.xlabel(r'Noise intensity ($v$)',
                    fontsize=fontsizes['axis'])
-        if dataset.name == SpliceJunction.name:
-            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)],
+        #if dataset.name == SpliceJunction.name:
+        ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)],
                           fontsize=fontsizes['ticks'])
-        else:
-            ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)],
-                          fontsize=fontsizes['ticks'])
+        #else:
+        #    ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i}' for i in range(0, steps)],
+        #                  fontsize=fontsizes['ticks'])
         plt.legend(loc='upper right', prop=legend_font)
-    elif exp_type == 'mix':
-        plt.xlabel(r'Cardinality of the training set ($\left\|\cdot\right\|$) and noise level ($\sigma$)',
-                   fontsize=fontsizes['axis'])
-        drop_percentage_labels = [r'$\left\|\cdot\right\|$ = ' \
-                                  r'{}%'.format(100 - i) for i in range(0,
-                                                                        drop_percentage * steps,
-                                                                        drop_percentage)]
-        if dataset.name == SpliceJunction.name:
-            noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
-        else:
-            noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
-        labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
-        ax.set_xticks(np.arange(1, steps + 1, 1), labels,
-                      fontsize=15, rotation=80)
-        plt.legend(loc='lower left', prop=legend_font)
+
     elif exp_type == 'label_flip':
-        plt.xlabel(r'Flipping probability $P_f$', fontsize=fontsizes['axis'])
-        labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+        plt.xlabel(r'Flipping probability $f$', fontsize=fontsizes['axis'])
+        labels = [r'$f$ = {:.2f}%'.format(100 * (0.9 / steps - 1) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels,
                       fontsize=fontsizes['ticks'], rotation=80)
         plt.legend(loc='lower left', prop=legend_font)
@@ -371,7 +351,7 @@ def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, Sp
                                                                             drop_percentage * steps,
                                                                             drop_percentage)]
             if dataset.name == SpliceJunction.name:
-                noise_value_labels = [r'$\sigma$={}'.format(i/10) for i in range(steps)]
+                noise_value_labels = [r'$\sigma$={}'.format(i / 10) for i in range(steps)]
             else:
                 noise_value_labels = [r'$\sigma$={}'.format(i) for i in range(steps)]
             labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
@@ -381,7 +361,7 @@ def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, Sp
             plt.legend(loc='lower right', prop=legend_font)
         elif exp_type == 'label_flip':
             plt.xlabel(r'Flipping probability $P_f$', fontsize=fontsizes['axis'])
-            labels = [r'$P_f$ = {:.2f}%'.format(100*(0.9 / steps) * i) for i in range(0, steps)]
+            labels = [r'$P_f$ = {:.2f}%'.format(100 * (0.9 / steps) * i) for i in range(0, steps)]
             ax.set_xticks(np.arange(1, steps + 1, 1), labels,
                           fontsize=fontsizes['ticks'], rotation=80)
             plt.legend(loc='upper left', prop=legend_font)
