@@ -252,7 +252,7 @@ def _compute_kl_div(data1: pd.DataFrame, data2: pd.DataFrame) -> float:
 def compute_robustness(perturbation: str, dataset: BreastCancer or SpliceJunction or CensusIncome, metric: str) -> dict:
     models = ['uneducated', 'kins', 'kill', 'kbann']
     robustness_dict = {}
-    n = 10 if perturbation == 'noise' else 20
+    n = 10 if perturbation in ['noise', 'label_flip'] else 20
 
     def f(x):
         return np.asarray([abs(y) if y < 0 else 1E-5 for y in x])

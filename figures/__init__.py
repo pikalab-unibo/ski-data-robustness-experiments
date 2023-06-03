@@ -168,8 +168,8 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
         labels = [y + " &\n" + x for x, y in zip(drop_percentage_labels, noise_value_labels)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     elif exp_type == 'label_flip':
-        plt.xlabel(r'Flipping probability $P_f$')
-        labels = [r'$P_f$ = {:.2f}%'.format(100 * (0.9 / steps) * i) for i in range(0, steps)]
+        plt.xlabel(r'Flipping probability $f$')
+        labels = [r'{:.2f}'.format((0.9 / (steps-1)) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
@@ -255,9 +255,9 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
 
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $f$', fontsize=fontsizes['axis'])
-        labels = [r'$f$ = {:.2f}%'.format(100 * (0.9 / steps - 1) * i) for i in range(0, steps)]
+        labels = [r'{:.2f}'.format((0.9 / (steps - 1)) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels,
-                      fontsize=fontsizes['ticks'], rotation=80)
+                      fontsize=fontsizes['ticks'])
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         plt.legend(loc='lower left', prop=legend_font)
     plt.yticks(fontsize=fontsizes['ticks'])
