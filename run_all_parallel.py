@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     if options.experiment.lower() in ['train', 't']:
         datas = ["b", "c", "s"]
-        degradations = ["l"]  # ["d", "n", "l", "m"]
+        degradations = ["d", "n", "l"]
         predictors = ["u", "kins", "kill", "kbann"]
         commands = ["python setup.py run_experiments -d {} -t {} -p {}".format(d, e, p) for d in datas
                     for e in degradations
@@ -32,22 +32,22 @@ if __name__ == '__main__':
         run_all_in_parallel(commands, logfiles)
     elif options.experiment.lower() in ['kl', 'divergence']:
         datas = ["b", "c", "s"]
-        degradations = ["l"]  # ["d", "n", "l", "m"]
+        degradations = ["d", "n", "l"]
         commands = ["python setup.py run_divergence -d {} -t {}".format(d, e) for d in datas for e in degradations]
         logfiles = ["logs/kl of d={}-e={}.txt".format(d, e) for d in datas for e in degradations]
         run_all_in_parallel(commands, logfiles)
     elif options.experiment.lower() in ['metric', 'robustness']:
-        degradations = ["d", "n", "l", "m"]
+        degradations = ["d", "n", "l"]
         commands = ["python setup.py compute_robustness -t {}".format(e) for e in degradations]
         logfiles = ["logs/robustness computation of e={}.txt".format(e) for e in degradations]
         run_all_in_parallel(commands, logfiles)
     elif options.experiment.lower() in ['plot_accs', 'plot_acc']:
-        degradations = ["d", "n", "l", "m"]
+        degradations = ["d", "n", "l"]
         commands = ["python setup.py generate_comparative_distribution_curves -t {}".format(e) for e in degradations]
         logfiles = ["logs/plot accuracies of e={}.txt".format(e) for e in degradations]
         run_all_in_parallel(commands, logfiles)
     elif options.experiment.lower() in ['plot_kl', 'plot_divergence']:
-        degradations = ["d", "n", "l", "m"]
+        degradations = ["d", "n", "l"]
         commands = ["python setup.py generate_divergences_plots -t {}".format(e) for e in degradations]
         logfiles = ["logs/plot divergences of e={}.txt".format(e) for e in degradations]
         run_all_in_parallel(commands, logfiles)
