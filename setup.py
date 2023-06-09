@@ -25,6 +25,7 @@ from experiments import experiment_with_data_drop, experiment_with_data_noise, \
 from statistics import compute_robustness
 
 import cpuinfo
+
 cpu_brand = cpuinfo.get_cpu_info()['brand_raw']
 if cpu_brand in ['Intel(R) Xeon(R) Gold 6226R CPU @ 2.90GHz', 'Intel(R) Xeon(R) W-2275 CPU @ 3.30GHz']:
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
@@ -299,131 +300,6 @@ class GenerateDivergencesPlots(distutils.cmd.Command):
         plot_divergences_distributions(results, self.exp_type, 5, self.experiments)
 
 
-class GeneratePlots(distutils.cmd.Command):
-    description = 'generate plots'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], l[abel flip])')]
-    exp_type = None
-    experiments = None
-
-    def initialize_options(self) -> None:
-        self.type = None
-
-    def finalize_options(self) -> None:
-        if self.type:
-            if self.type.lower() == 'd':
-                self.exp_type = 'drop'
-                self.experiments = 20
-            elif self.type.lower() == 'n':
-                self.exp_type = 'noise'
-                self.experiments = 11
-            elif self.type.lower() == 'l':
-                self.exp_type = 'label_flip'
-                self.experiments = 11
-
-    def run(self) -> None:
-        from figures import plot_accuracy_distributions
-        from results.drop import PATH as DROP_RESULT_PATH
-        from results.noise import PATH as NOISE_RESULT_PATH
-        from results.label_flip import PATH as LABEL_FLIP_RESULT_PATH
-
-        if self.exp_type == 'drop':
-            path = DROP_RESULT_PATH
-        elif self.exp_type == 'noise':
-            path = NOISE_RESULT_PATH
-        elif self.exp_type == 'label_flip':
-            path = LABEL_FLIP_RESULT_PATH
-        else:
-            raise ValueError('Experiment type {} is not available!'.format(self.exp_type))
-        predictor_names = ['uneducated', 'kins', 'kill', 'kbann']
-        datasets = [BreastCancer, SpliceJunction, CensusIncome]
-        metrics = ['accuracy', 'precision', 'recall']
-        for dataset in datasets:
-            print(f'Generating plots for {dataset.name} dataset')
-            for predictor in predictor_names:
-                results = []
-                directory = path / dataset.name / predictor
-                if os.path.exists(directory):
-                    files = os.listdir(directory)
-                    files = sorted(files, key=lambda x: int("".join([i for i in x if i.isdigit()])))
-                    files = [directory / f for f in files if f.endswith('.csv')]
-                    if len(files) > 0:
-                        first_drop = DROP_RESULT_PATH / dataset.name / predictor / '1.csv'
-                        if self.exp_type == 'noise' and first_drop not in files:
-                            files.insert(0, first_drop)
-                        for file in files:
-                            results.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
-                        for metric in metrics:
-                            plot_accuracy_distributions(results, dataset, self.exp_type, 5, self.experiments, predictor,
-                                                        metric)
-
-
-class GenerateComparisonPlots(distutils.cmd.Command):
-    description = 'generate comparison plots'
-    user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], l[abel flip])')]
-    exp_type = None
-    experiments = None
-
-    def initialize_options(self) -> None:
-        self.type = None
-
-    def finalize_options(self) -> None:
-        if self.type:
-            if self.type.lower() == 'd':
-                self.exp_type = 'drop'
-                self.experiments = 20
-            elif self.type.lower() == 'n':
-                self.exp_type = 'noise'
-                self.experiments = 11
-            elif self.type.lower() == 'l':
-                self.exp_type = 'label_flip'
-                self.experiments = 10
-
-    def run(self) -> None:
-        from figures import plot_distributions_comparison
-        from results.drop import PATH as DROP_RESULT_PATH
-        from results.noise import PATH as NOISE_RESULT_PATH
-        from results.label_flip import PATH as LABEL_FLIP_RESULT_PATH
-
-        if self.exp_type == 'drop':
-            path = DROP_RESULT_PATH
-        elif self.exp_type == 'noise':
-            path = NOISE_RESULT_PATH
-        elif self.exp_type == 'label_flip':
-            path = LABEL_FLIP_RESULT_PATH
-        else:
-            raise ValueError('Experiment type {} is not available!'.format(self.exp_type))
-        educated_predictors = ['kins', 'kill', 'kbann']
-        datasets = [BreastCancer, SpliceJunction, CensusIncome]
-        metric = 'accuracy'
-        for dataset in datasets:
-            print(f'Generating comparison plots for {dataset.name} dataset')
-            directory1 = path / dataset.name / 'uneducated'
-            files1 = os.listdir(directory1)
-            files1 = sorted(files1, key=lambda x: int("".join([i for i in x if i.isdigit()])))
-            files1 = [directory1 / f for f in files1 if f.endswith('.csv')]
-            first_drop = DROP_RESULT_PATH / dataset.name / 'uneducated' / '1.csv'
-            if first_drop not in files1:
-                files1.insert(0, first_drop)
-            for educated in educated_predictors:
-                directory2 = path / dataset.name / educated
-                if not os.path.exists(directory2):
-                    continue
-                files2 = os.listdir(directory2)
-                files2 = sorted(files2, key=lambda x: int("".join([i for i in x if i.isdigit()])))
-                files2 = [directory2 / f for f in files2 if f.endswith('.csv')]
-                first_drop = DROP_RESULT_PATH / dataset.name / educated / '1.csv'
-                if first_drop not in files2:
-                    files2.insert(0, first_drop)
-                results1, results2 = [], []
-                if 0 < len(files1) == len(files2):
-                    for file in files1:
-                        results1.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
-                    for file in files2:
-                        results2.append(pd.read_csv(file, header=0, sep=",", encoding='utf8'))
-                    plot_distributions_comparison(results1, results2, dataset, self.exp_type, 5, self.experiments,
-                                                  'uneducated', educated, metric)
-
-
 class GenerateComparativeDistributionCurves(distutils.cmd.Command):
     description = 'generate comparative distribution curves'
     user_options = [('type=', 't', 'type of experiment (d[rop], n[oise], l[abel flip])')]
@@ -526,8 +402,6 @@ setup(
         'run_experiments': RunExperiments,
         'run_divergence': RunExperimentsDivergence,
         'compute_robustness': ComputeMetrics,
-        'generate_plots': GeneratePlots,
-        'generate_comparison_plots': GenerateComparisonPlots,
         'generate_comparative_distribution_curves': GenerateComparativeDistributionCurves,
         'generate_knowledge_confusion_matrix': GenerateKnowledgeConfusionMatrix,
         'generate_divergences_plots': GenerateDivergencesPlots,
