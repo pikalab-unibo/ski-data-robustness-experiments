@@ -61,8 +61,8 @@ Features are continuous, (nominal and ordinal) categorical and binary.
 14. native-country, nominal categorical
 
 ## 2. Run experiments
-Execute the command ```python -m setup.py run_experiments -t [d, n] -d [b, s, c] -p [u, kins, kill, kbann]``` to run experiments.
-The -t flag indicates the type of experiments to run: `d` for data drop degradation experiments, `n` for noise experiments.
+Execute the command ```python -m setup.py run_experiments -t [d, n, l] -d [b, s, c] -p [u, kins, kill, kbann]``` to run experiments.
+The -t flag indicates the type of experiments to run: `d` for data drop degradation experiments, `n` for noise experiments, `l` for label-flipping experiments.
 The -d flag indicates the dataset to use: `b` for breast cancer, `s` for splice junction, `c` for census income.
 The -p flag indicates the type of predictor to use: `u` for the uneducated, `kins` for the [KINS](http://ceur-ws.org/Vol-3204/paper_25.pdf) SKI method, `kill` for [KILL](http://ceur-ws.org/Vol-3261/paper5.pdf) SKI method, `kbann` for [KBANN](http://www.aaai.org/Library/AAAI/1990/aaai90-129.php) SKI method.
 
@@ -76,6 +76,19 @@ To execute this computation, run the command ```python -m setup.py run_divergenc
 Results are stored in the `results` folder in the corresponding subfolder (e.g. `results/drop/breast-cancer/divergences/1.csv`).
 
 ## 4. Robustness
-To compute the robustness of the SKI methods, run the command ```python -m setup.py compute_robustness -t [d, n]```.
-The -t flag indicates the type of experiments to run: `d` for data drop degradation experiments, `n` for noise experiments.
+To compute the robustness of the SKI methods, run the command ```python -m setup.py compute_robustness -t [d, n, l]```.
+The -t flag indicates the type of experiments to run: `d` for data drop degradation experiments, `n` for noise experiments, `l` for label-flipping experiments.
 Results are stored in the `results` folder in the corresponding subfolder (e.g. `results/drop/breast-cancer/robustness.csv`).
+
+## 5. Plots
+You can generate different kind of plots:
+- To compute *accuracy plots*, run the command ```python -m setup.py generate_comparative_distribution_curves -t [d, n, l]``` 
+- To compute *divergences plots*, run the command ```python -m setup.py generate_divergences_plots -t [d, n, l]``` 
+
+## 6. Run in parallel
+To run all the experiments and metrics in parallel, you can use:
+- ```run_all_parallel.py —experiment=“train”```, to run all the experiments
+- ```run_all_parallel.py —experiment=“divergence”```, to compute the KL divergences across all the experiments
+- ```run_all_parallel.py —experiment=“robustness”```, to compute the robustness across all the experiments
+- ```run_all_parallel.py —experiment=“plot_accs”```, to plot the accuracy across all the experiments 
+- ```run_all_parallel.py —experiment=“plot_divergence”```, to plot the KL divergence across all the experiments 
