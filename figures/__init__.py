@@ -10,6 +10,8 @@ from data import BreastCancer, SpliceJunction, CensusIncome
 from experiments import TEST_RATIO
 from mlxtend.plotting import plot_confusion_matrix
 from matplotlib.ticker import FormatStrFormatter
+from scipy import stats
+import matplotlib.lines as mlines
 
 try:
     mpl.use('TkAgg')  # !IMPORTANT
@@ -169,7 +171,7 @@ def plot_distributions_comparison(data1: list[pd.DataFrame], data2: list[pd.Data
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     elif exp_type == 'label_flip':
         plt.xlabel(r'Flipping probability $f$')
-        labels = [r'{:.2f}'.format((0.9 / (steps-1)) * i) for i in range(0, steps)]
+        labels = [r'{:.2f}'.format((0.9 / (steps - 1)) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels, rotation=80)
     plt.legend([b1["boxes"][0], b2["boxes"][0]], [predictor_name1, predictor_name2], loc='upper right')
     _create_missing_directories(PATH, exp_type, dataset)
@@ -195,11 +197,6 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
     :param predictor_names: The names of the predictors.
     :param metric: The metric used to evaluate the predictor.
     """
-
-    lines = {'uneducated': 'solid',
-             'kbann': (0, (3, 5, 1, 5, 1, 5)),
-             'kill': (0, (3, 5, 1, 5)),
-             'kins': (0, (5, 10))}
     markers = {'uneducated': 'o',
                'kbann': 'v',
                'kill': '^',
@@ -208,16 +205,18 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
               'kbann': 'blue',
               'kill': 'green',
               'kins': 'black'}
-    fontsizes = {'title': 19,
-                 'legend': 22,
+    fontsizes = {'title': 22,
+                 'legend': 19,
                  'axis': 25,
                  'ticks': 20, }
+
     legend_font = font_manager.FontProperties(style='normal', size=fontsizes['legend'])
 
     data_size = dataset.size * (1 - TEST_RATIO)
     fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(111)
     predictor_names.insert(0, 'uneducated')
+    curve_db = pd.DataFrame()
     for i in range(len(experiments)):
         if metric == 'f1':
             precisions = [distribution['precision'] for distribution in experiments[i]]
@@ -225,15 +224,35 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
             curve = [np.mean((2 * p * r) / (p + r)) for p, r in zip(precisions, recalls)]
         else:
             curve = [np.mean(distribution[metric]) for distribution in experiments[i]]  # means of the distributions
-        ax.plot(np.arange(1, steps + 1, 1), curve,
+            curve_db['{}'.format(predictor_names[i])] = curve
+
+        ax.plot(curve,
                 marker=markers[predictor_names[i]],
                 markersize=10,
                 color=colors[predictor_names[i]],
                 label=predictor_names[i].upper(),
                 linewidth=3)
+
+    p_values = find_statistics(curve_db)
+
     plt.ylabel(metric.capitalize() + ' on test set',
                fontsize=fontsizes['axis'])
+
+    if exp_type == 'noise':
+        legend = ax.legend(p_values.values(), loc='lower left', prop=legend_font, title='p-values')
+    else:
+        legend = ax.legend(p_values.values(), loc='upper right', prop=legend_font, title='p-values')
+
+    leg = ax.get_legend()
+    leg.legendHandles[0].set_color('black')
+    leg.legendHandles[1].set_color('green')
+    leg.legendHandles[2].set_color('blue')
+    leg.legendHandles[0].set_marker('s')
+    leg.legendHandles[1].set_marker('^')
+    leg.legendHandles[2].set_marker('v')
+
     if exp_type == 'drop':
+        plt.title('{} with data drop'.format(dataset.name), fontsize=fontsizes['axis'])
         plt.xlabel('Cardinality of the training set and dropping probability',
                    fontsize=fontsizes['axis'])
         drop_percentage_labels = [f'($d$={i}%)' for i in range(0, drop_percentage * steps, drop_percentage)]
@@ -243,23 +262,31 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
                       fontsize=fontsizes['ticks'], rotation=60)
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         plt.legend(loc='lower left', prop=legend_font)
+        plt.gca().add_artist(legend)
+
     elif exp_type == 'noise':
+        plt.title('{} with noise addition'.format(dataset.name), fontsize=fontsizes['axis'])
         plt.xlabel(r'Noise intensity ($v$)',
                    fontsize=fontsizes['axis'])
 
         ax.set_xticks(np.arange(1, steps + 1, 1), [f'{i / 10}' for i in range(0, steps)],
-                          fontsize=fontsizes['ticks'])
+                      fontsize=fontsizes['ticks'])
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
         plt.legend(loc='upper right', prop=legend_font)
+        plt.gca().add_artist(legend)
 
     elif exp_type == 'label_flip':
+        plt.title('{} with label flipping'.format(dataset.name), fontsize=fontsizes['axis'])
         plt.xlabel(r'Flipping probability $f$', fontsize=fontsizes['axis'])
         labels = [r'{:.2f}'.format((0.9 / (steps - 1)) * i) for i in range(0, steps)]
         ax.set_xticks(np.arange(1, steps + 1, 1), labels,
                       fontsize=fontsizes['ticks'])
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
         plt.legend(loc='lower left', prop=legend_font)
+        plt.gca().add_artist(legend)
+
     plt.yticks(fontsize=fontsizes['ticks'])
     plt.tight_layout()
     _create_missing_directories(PATH, exp_type, dataset)
@@ -269,6 +296,14 @@ def plot_average_accuracy_curves(experiments: list[list[pd.DataFrame]],
         predictor_names) + '-' + metric + '-average-curves.pdf'))
     plt.savefig(PATH / (exp_type + os.sep + dataset.name + os.sep + '-'.join(
         predictor_names) + '-' + metric + '-average-curves.png'))
+
+
+def find_statistics(dataset: pd.DataFrame()):
+    p_values_dict = {}
+    for inj in ['kins', 'kill', 'kbann']:
+        stat, p_value = stats.mannwhitneyu(dataset['uneducated'], dataset[inj])
+        p_values_dict[inj] = np.round(p_value, 2)
+    return p_values_dict
 
 
 def plot_divergences_distributions(experiments: dict[Type[Union[BreastCancer, SpliceJunction, CensusIncome]], list],
