@@ -30,7 +30,7 @@ It consists of 9 categorical ordinal features:
 All features have integer values in [1, 10] range.
 Class indicates if the cancer is benign or malignant.
 
-### [Primate splice junction gene sequences dataset](https://archive.ics.uci.edu/ml/datasets/Molecular+Biology+(Splice-junction+Gene+Sequences)) (PSJGS)
+### [Primate splice junction gene sequences dataset](https://archive.ics.uci.edu/dataset/69/molecular+biology+splice+junction+gene+sequences) (PSJGS)
 It represents DNA sequences.
 Each sequence consists of 60 bases.
 Values of one base can be `a`, `c`, `g`, `t` (adenine, cytosine, guanine, thymine).
