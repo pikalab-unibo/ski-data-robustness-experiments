@@ -88,8 +88,8 @@ You can generate different kind of plots:
 
 ## 6. Run in parallel
 To run all the experiments and metrics in parallel, you can use:
-- ```python run_all_parallel.py —experiment=“train”```, to run all the experiments
-- ```python run_all_parallel.py —experiment=“divergence”```, to compute the KL divergences across all the experiments
-- ```python run_all_parallel.py —experiment=“robustness”```, to compute the robustness across all the experiments
-- ```python run_all_parallel.py —experiment=“plot_accs”```, to plot the accuracy across all the experiments 
-- ```python run_all_parallel.py —experiment=“plot_divergence”```, to plot the KL divergence across all the experiments 
+- ```python run_all_parallel.py --experiment="train"```, to run all the experiments
+- ```python run_all_parallel.py --experiment="divergence"```, to compute the KL divergences across all the experiments
+- ```python run_all_parallel.py --experiment="robustness"```, to compute the robustness across all the experiments
+- ```python run_all_parallel.py --experiment="plot_accs"```, to plot the accuracy across all the experiments 
+- ```python run_all_parallel.py --experiment="plot_divergence"```, to plot the KL divergence across all the experiments 
