@@ -2,6 +2,11 @@
 Experiments for "Are Symbolic Knowledge Injection Techniques Robust Against Data Quality
 Degradation?"
 
+## 0. About Python version
+
+- We worked with Python version `3.9.17`
+- However, any Python version in the range `3.9.x` should be fine for reproducing the experiments
+
 ## 1. Download datasets
 Execute the command ```python -m setup.py load_datasets``` to download datasets from UCI website.
 By default, the command will store the original dataset into ```datasets``` folder.
