@@ -1,6 +1,6 @@
-# Are Symbolic Knowledge Injection Techniques Robust Against Data Quality Degradation?
-Experiments for "Are Symbolic Knowledge Injection Techniques Robust Against Data Quality
-Degradation?"
+# An Empirical Study on the Robustness of Knowledge Injection Techniques Against Data Degradation
+
+Code of the experiments
 
 ## 0. About Python version
 
@@ -8,6 +8,7 @@ Degradation?"
 - However, any Python version in the range `3.9.x` should be fine for reproducing the experiments
 
 ## 1. Download datasets
+
 Execute the command ```python -m setup.py load_datasets``` to download datasets from UCI website.
 By default, the command will store the original dataset into ```datasets``` folder.
 
@@ -20,6 +21,7 @@ Therefore, to preserve reproducibility, we have added the preprocessed dataset t
 Conversely, there is no need to execute the command ```python -m setup.py load_datasets``` anymore.
 
 ### [Wisconsin breast cancer dataset](https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+%28original%29) (BCW)
+
 It represents clinical data of patients.
 It consists of 9 categorical ordinal features:
 1. Clump Thickness
@@ -36,6 +38,7 @@ All features have integer values in [1, 10] range.
 Class indicates if the cancer is benign or malignant.
 
 ### [Primate splice junction gene sequences dataset](https://archive.ics.uci.edu/dataset/69/molecular+biology+splice+junction+gene+sequences) (PSJGS)
+
 It represents DNA sequences.
 Each sequence consists of 60 bases.
 Values of one base can be `a`, `c`, `g`, `t` (adenine, cytosine, guanine, thymine).
@@ -66,6 +69,7 @@ Features are continuous, (nominal and ordinal) categorical and binary.
 14. native-country, nominal categorical
 
 ## 2. Run experiments
+
 Execute the command ```python -m setup.py run_experiments -t [d, n, l] -d [b, s, c] -p [u, kins, kill, kbann]``` to run experiments.
 The -t flag indicates the type of experiments to run: `d` for data drop degradation experiments, `n` for noise experiments, `l` for label-flipping experiments.
 The -d flag indicates the dataset to use: `b` for breast cancer, `s` for splice junction, `c` for census income.
@@ -76,22 +80,26 @@ Some executions are faster than others, for instance in the case of the BCW data
 Results are stored in the `results` folder.
 
 ## 3. KL divergence
+
 To compute the intensity of the data degradation we rely on a formula that requires the computation of the KL divergence between the original and the degraded dataset.
 To execute this computation, run the command ```python -m setup.py run_divergence```.
 Results are stored in the `results` folder in the corresponding subfolder (e.g. `results/drop/breast-cancer/divergences/1.csv`).
 
 ## 4. Robustness
+
 To compute the robustness of the SKI methods, run the command ```python -m setup.py compute_robustness -t [d, n, l]```.
 The -t flag indicates the type of experiments to run: `d` for data drop degradation experiments, `n` for noise experiments, `l` for label-flipping experiments.
 Results are stored in the `results` folder in the corresponding subfolder (e.g. `results/drop/breast-cancer/robustness.csv`).
 
 ## 5. Plots
+
 You can generate different kind of plots:
 - To compute *knowledge confusion matrices*, run the command ```python -m setup.py generate_knowledge_confusion_matrix -t [d, n, l]```
 - To compute *accuracy plots*, run the command ```python -m setup.py generate_comparative_distribution_curves -t [d, n, l]``` 
 - To compute *divergences plots*, run the command ```python -m setup.py generate_divergences_plots -t [d, n, l]``` 
 
 ## 6. Run in parallel
+
 To run all the experiments and metrics in parallel, you can use:
 - ```python run_all_parallel.py --experiment="train"```, to run all the experiments
 - ```python run_all_parallel.py --experiment="divergence"```, to compute the KL divergences across all the experiments
